@@ -1,0 +1,25 @@
+spring:
+  application:
+    name:
+      StoreManagement
+  server:
+    port:
+      your_port
+  datasource:
+    url:
+      your_database_url
+    username:
+      your_username
+    password:
+      your_password
+  jpa:
+    hibernate:
+      ddl-auto:
+        update
+    database-platform:
+      org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate.format_slq:
+          true
+    show-sql:
+      true
