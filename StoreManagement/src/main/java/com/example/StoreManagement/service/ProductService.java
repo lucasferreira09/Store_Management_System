@@ -3,6 +3,7 @@ package com.example.StoreManagement.service;
 import com.example.StoreManagement.mapstruct.mappers.CategoryMapper;
 import com.example.StoreManagement.mapstruct.mappers.ProductMapper;
 import com.example.StoreManagement.model.dtoRequest.ProductDtoPostRequest;
+import com.example.StoreManagement.model.dtoRequest.ProductDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
 import com.example.StoreManagement.model.entity.Category;
 import com.example.StoreManagement.model.entity.Product;
@@ -31,25 +32,29 @@ public class ProductService {
         this.productMapper = productMapper;
     }
 
-    public List<ProductDtoResponse> getAllProducts() {
+    public List<ProductDtoResponse> findAll() {
         List<Product> products = this.productRepository.findAll();
 
         return this.productMapper.entitiesToAllDtoResponse(products);
     }
 
-    public ProductDtoResponse getProductById(Long id) {
+    public ProductDtoResponse findById(Long id) {
         Product product = this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found with this id!"));
 
         return this.productMapper.entityToDtoResponse(product);
     }
 
-    public List<ProductDtoResponse> getProductByName(String name) {
+    public List<ProductDtoResponse> findByName(String name) {
 
         List<Product> product = this.productRepository.findByName(name);
         return this.productMapper.entitiesToAllDtoResponse(product);
     }
 
-    public ProductDtoResponse getProductByBarcode(String barcode) {
+    public List<ProductDtoResponse> findByCategoryId(Long id) {
+        return this.productMapper.entitiesToAllDtoResponse(this.productRepository.findByCategoryId(id));
+    }
+
+    public ProductDtoResponse findByBarcode(String barcode) {
 
         Product product = this.productRepository.findByBarcode(barcode);
         if (product == null) {
@@ -58,7 +63,7 @@ public class ProductService {
         return this.productMapper.entityToDtoResponse(product);
     }
 
-    public ProductDtoResponse addProduct(ProductDtoPostRequest dtoPost) {
+    public ProductDtoResponse create(ProductDtoPostRequest dtoPost) {
         if (this.productRepository.existsByBarcode(dtoPost.barcode())) {
             throw new EntityExistsException("This product already exists");
         }
@@ -68,8 +73,41 @@ public class ProductService {
                 dtoPost.categoryID()).orElseThrow(() -> new EntityNotFoundException("Error while creating product. Category not found!"));
 
         product.setCategory(category);
-
         Product savedProduct = this.productRepository.save(product);
+
         return this.productMapper.entityToDtoResponse(savedProduct);
+    }
+
+    public ProductDtoResponse update(Long id, ProductDtoPutRequest productDtoPutRequest) {
+        Product product = this.productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with this id"));
+
+        Product updatedProduct = this.productMapper.dtoPutRequestToEntity(productDtoPutRequest);
+        updatedProduct.setId(product.getId());
+        updatedProduct.setCategory(product.getCategory());
+        productRepository.save(updatedProduct);
+
+        return this.productMapper.entityToDtoResponse(updatedProduct);
+    }
+
+    public ProductDtoResponse update(Long productId, Long categoryId) {
+        Product product = this.productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with this id"));
+
+        Category category = this.categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with this id"));
+
+        product.setCategory(category);
+        productRepository.save(product);
+
+        return this.productMapper.entityToDtoResponse(product);
+
+    }
+
+    public void delete(Long id) {
+        Product product = this.productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with this id"));
+
+        this.productRepository.delete(product);
     }
 }

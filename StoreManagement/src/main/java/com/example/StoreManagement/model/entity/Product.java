@@ -14,7 +14,8 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productID;
+    @Column(name = "id")
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -28,14 +29,14 @@ public class Product {
     @Column(name = "photo")
     private String photo;
 
-    @Column(name = "salePrice", nullable = false)
-    private BigDecimal salePrice;
+    @Column(name = "sale_price", nullable = false)
+    private BigDecimal sale_price;
 
-    @Column(name = "costPrice", nullable = false)
-    private BigDecimal costPrice;
+    @Column(name = "cost_price", nullable = false)
+    private BigDecimal cost_price;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "categoryID")
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
 }

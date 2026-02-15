@@ -1,6 +1,10 @@
 package com.example.StoreManagement.controller;
 
+import com.example.StoreManagement.model.dtoRequest.CategoryDtoPostRequest;
+import com.example.StoreManagement.model.dtoRequest.CustomerDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.ProductDtoPostRequest;
+import com.example.StoreManagement.model.dtoRequest.ProductDtoPutRequest;
+import com.example.StoreManagement.model.dtoResponse.CustomerDtoResponse;
 import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,36 +25,66 @@ public class ProductController {
     }
 
     @GetMapping()
-    public List<ProductDtoResponse> getAllProducts() {
-        return this.productService.getAllProducts();
+    public List<ProductDtoResponse> getAll() {
+        return this.productService.findAll();
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<ProductDtoResponse> getProductById(Long id) {
+    public ResponseEntity<ProductDtoResponse> getById(@PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.productService.getProductById(id));
+                .body(this.productService.findById(id));
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<List<ProductDtoResponse>> getProductByName(String name) {
+    public ResponseEntity<List<ProductDtoResponse>> getByName(@PathVariable String name) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.productService.getProductByName(name));
+                .body(this.productService.findByName(name));
     }
 
-    @GetMapping("/barcode/{barcode}")
-    public ResponseEntity<ProductDtoResponse> getProductByBarcode(String barcode) {
+    @GetMapping("/categoryId/{id}")
+    public ResponseEntity<List<ProductDtoResponse>> getByCategoryId(@PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.productService.getProductByBarcode(barcode));
+                .body(this.productService.findByCategoryId(id));
+    }
+    @GetMapping("/barcode/{barcode}")
+    public ResponseEntity<ProductDtoResponse> getByBarcode(@PathVariable String barcode) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.productService.findByBarcode(barcode));
     }
 
     @PostMapping()
-    public ResponseEntity<ProductDtoResponse> addProduct(@RequestBody @Valid ProductDtoPostRequest productDtoPostRequest) {
+    public ResponseEntity<ProductDtoResponse> create(@RequestBody @Valid ProductDtoPostRequest productDtoPostRequest) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(this.productService.addProduct(productDtoPostRequest));
+                .body(this.productService.create(productDtoPostRequest));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDtoResponse> update(
+            @PathVariable Long id, @RequestBody @Valid ProductDtoPutRequest productDtoPutRequest
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.productService.update(id, productDtoPutRequest));
+    }
+
+    @PutMapping("/productId/{productId}/categoryId/{categoryId}")
+    public ResponseEntity<ProductDtoResponse> update(
+            @PathVariable Long productId, @PathVariable Long categoryId
+            ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.productService.update(productId, categoryId));
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        this.productService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
 
