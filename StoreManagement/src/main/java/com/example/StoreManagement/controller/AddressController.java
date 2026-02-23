@@ -28,11 +28,11 @@ public class AddressController {
                 .body(this.addressService.findAll());
     }
 
-    @GetMapping("/customerId/{id}")
-    public ResponseEntity<List<AddressDtoResponse>> getByCustomerId(@PathVariable Long id) {
+    @GetMapping("/id/{id}")
+    public ResponseEntity<AddressDtoResponse> getById(@PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.addressService.findByCustomerId(id));
+                .body(this.addressService.findById(id));
     }
 
     @PostMapping
@@ -42,13 +42,12 @@ public class AddressController {
                 .body(this.addressService.create(addressDtoPostRequest));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<AddressDtoResponse> update(
-            @PathVariable Long id, @RequestBody @Valid AddressDtoPutRequest dtoPutRequestToEntity
-    ) {
+    @PutMapping("/id/{id}")
+    public ResponseEntity<AddressDtoResponse> update(@PathVariable Long id, AddressDtoPutRequest dtoPutRequest) {
+
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.addressService.update(id, dtoPutRequestToEntity));
+                .body(this.addressService.update(id, dtoPutRequest));
     }
 
     @DeleteMapping("{id}")

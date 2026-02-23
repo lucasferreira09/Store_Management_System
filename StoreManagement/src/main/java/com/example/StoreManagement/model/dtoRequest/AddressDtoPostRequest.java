@@ -1,7 +1,6 @@
 package com.example.StoreManagement.model.dtoRequest;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public record AddressDtoPostRequest(
         @NotBlank(message = "Street must not be empty")
@@ -20,8 +19,5 @@ public record AddressDtoPostRequest(
         String state,
 
         @NotBlank(message = "ZIP must not be empty")
-        String zip,
-
-        @NotNull(message = "CustomerID must not be empty")
-        Long customerID
+        String zip
 ) {}

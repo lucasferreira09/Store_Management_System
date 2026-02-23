@@ -1,10 +1,7 @@
 package com.example.StoreManagement.controller;
 
-import com.example.StoreManagement.model.dtoRequest.CategoryDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.CustomerDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.ProductDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.ProductDtoPutRequest;
-import com.example.StoreManagement.model.dtoResponse.CustomerDtoResponse;
 import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -43,11 +40,11 @@ public class ProductController {
                 .body(this.productService.findByName(name));
     }
 
-    @GetMapping("/categoryId/{id}")
-    public ResponseEntity<List<ProductDtoResponse>> getByCategoryId(@PathVariable Long id) {
+    @GetMapping("/categoryId/{categoryId}")
+    public ResponseEntity<List<ProductDtoResponse>> getByCategoryId(@PathVariable Long categoryId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.productService.findByCategoryId(id));
+                .body(this.productService.findByCategoryId(categoryId));
     }
     @GetMapping("/barcode/{barcode}")
     public ResponseEntity<ProductDtoResponse> getByBarcode(@PathVariable String barcode) {
@@ -65,11 +62,11 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductDtoResponse> update(
-            @PathVariable Long id, @RequestBody @Valid ProductDtoPutRequest productDtoPutRequest
+            @PathVariable Long id, @RequestBody @Valid ProductDtoPostRequest dtoPostRequest
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.productService.update(id, productDtoPutRequest));
+                .body(this.productService.update(id, dtoPostRequest));
     }
 
     @PutMapping("/productId/{productId}/categoryId/{categoryId}")
@@ -86,6 +83,5 @@ public class ProductController {
         this.productService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 
 }

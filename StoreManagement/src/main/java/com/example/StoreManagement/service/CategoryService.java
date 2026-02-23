@@ -4,7 +4,6 @@ import com.example.StoreManagement.mapstruct.mappers.CategoryMapper;
 import com.example.StoreManagement.model.dtoRequest.CategoryDtoPostRequest;
 import com.example.StoreManagement.model.dtoResponse.CategoryDtoResponse;
 import com.example.StoreManagement.model.entity.Category;
-import com.example.StoreManagement.model.entity.Product;
 import com.example.StoreManagement.model.repository.CategoryRepository;
 import com.example.StoreManagement.model.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -42,15 +41,6 @@ public class CategoryService {
 
         List<Category> category = this.categoryRepository.findByName(name);
         return this.categoryMapper.entitiesToAllDtoResponse(category);
-    }
-
-    public CategoryDtoResponse findByProductId(Long id) {
-        Product product = this.productRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("This product doesn't exists"));
-
-        Category category = product.getCategory();
-
-        return this.categoryMapper.entityToDtoResponse(category);
     }
 
     public CategoryDtoResponse create(CategoryDtoPostRequest categoryDtoPostRequest) {

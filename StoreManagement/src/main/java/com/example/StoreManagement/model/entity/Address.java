@@ -36,8 +36,4 @@ public class Address {
     @Column(name = "zip", nullable = false)
     private String zip;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
-    private Customer customer;
-
 }

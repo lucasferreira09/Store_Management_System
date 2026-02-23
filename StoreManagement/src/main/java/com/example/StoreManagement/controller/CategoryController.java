@@ -34,14 +34,6 @@ public class CategoryController {
                 .body(this.categoryService.findById(id));
     }
 
-
-    @GetMapping("/productId/{id}")
-    public ResponseEntity<CategoryDtoResponse> getByProductId(@PathVariable Long id) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(this.categoryService.findByProductId(id));
-    }
-
     @GetMapping("/name/{name}")
     public ResponseEntity<List<CategoryDtoResponse>> getByName(@PathVariable String name) {
         return ResponseEntity

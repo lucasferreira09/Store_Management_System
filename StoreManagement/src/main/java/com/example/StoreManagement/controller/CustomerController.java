@@ -2,7 +2,6 @@ package com.example.StoreManagement.controller;
 
 import com.example.StoreManagement.model.dtoRequest.CustomerDtoPostRequest;
 import com.example.StoreManagement.model.dtoResponse.CustomerDtoResponse;
-import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
 import com.example.StoreManagement.service.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -28,11 +27,25 @@ public class CustomerController {
                 .body(this.customerService.findAll());
     }
 
+    @GetMapping("/id/{id}")
+    public ResponseEntity<CustomerDtoResponse> getById(@PathVariable Long id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.customerService.findById(id));
+    }
+
     @GetMapping("/name/{name}")
     public ResponseEntity<List<CustomerDtoResponse>> getByName(@PathVariable String name) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(this.customerService.findByName(name));
+    }
+
+    @GetMapping("/cpf/{cpf}")
+    public ResponseEntity<CustomerDtoResponse> getByCpf(@PathVariable String cpf) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.customerService.findByCpf(cpf));
     }
 
     @PostMapping

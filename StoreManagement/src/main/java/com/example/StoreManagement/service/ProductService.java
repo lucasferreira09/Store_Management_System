@@ -50,8 +50,8 @@ public class ProductService {
         return this.productMapper.entitiesToAllDtoResponse(product);
     }
 
-    public List<ProductDtoResponse> findByCategoryId(Long id) {
-        return this.productMapper.entitiesToAllDtoResponse(this.productRepository.findByCategoryId(id));
+    public List<ProductDtoResponse> findByCategoryId(Long categoryId) {
+        return this.productMapper.entitiesToAllDtoResponse(this.productRepository.findByCategoryId(categoryId));
     }
 
     public ProductDtoResponse findByBarcode(String barcode) {
@@ -70,7 +70,7 @@ public class ProductService {
 
         Product product = this.productMapper.dtoPostRequestToEntity(dtoPost);
         Category category = this.categoryRepository.findById(
-                dtoPost.categoryID()).orElseThrow(() -> new EntityNotFoundException("Error while creating product. Category not found!"));
+                dtoPost.categoryID()).orElseThrow(() -> new EntityNotFoundException("Category not found!"));
 
         product.setCategory(category);
         Product savedProduct = this.productRepository.save(product);
@@ -78,13 +78,21 @@ public class ProductService {
         return this.productMapper.entityToDtoResponse(savedProduct);
     }
 
-    public ProductDtoResponse update(Long id, ProductDtoPutRequest productDtoPutRequest) {
+    public ProductDtoResponse update(Long id, ProductDtoPostRequest dtoPostRequest) {
         Product product = this.productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with this id"));
 
-        Product updatedProduct = this.productMapper.dtoPutRequestToEntity(productDtoPutRequest);
-        updatedProduct.setId(product.getId());
-        updatedProduct.setCategory(product.getCategory());
+        Category category = this.categoryRepository.findById(dtoPostRequest.categoryID())
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+
+        if (!dtoPostRequest.barcode().equals(product.getBarcode())) {
+            if (this.productRepository.existsByBarcode(dtoPostRequest.barcode()))
+                throw new EntityExistsException("Another product already has this barcode");
+        }
+
+        Product updatedProduct = this.productMapper.dtoPostRequestToEntity(dtoPostRequest);
+        updatedProduct.setId(id);
+        updatedProduct.setCategory(category);
         productRepository.save(updatedProduct);
 
         return this.productMapper.entityToDtoResponse(updatedProduct);
@@ -101,7 +109,6 @@ public class ProductService {
         productRepository.save(product);
 
         return this.productMapper.entityToDtoResponse(product);
-
     }
 
     public void delete(Long id) {

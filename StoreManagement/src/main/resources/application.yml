@@ -4,14 +4,14 @@ spring:
       StoreManagement
   server:
     port:
-      your_port
+      8080
   datasource:
     url:
-      your_database_url
+      jdbc:postgresql://localhost:5432/StoreManagementDB
     username:
-      your_username
+      postgres
     password:
-      your_password
+      0468
   jpa:
     hibernate:
       ddl-auto:

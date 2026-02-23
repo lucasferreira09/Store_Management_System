@@ -11,5 +11,4 @@ public record CustomerDtoPostRequest(
         String phone_number,
         @NotBlank(message = "Email must not be empty")
         String email
-) {
-}
+) {}
