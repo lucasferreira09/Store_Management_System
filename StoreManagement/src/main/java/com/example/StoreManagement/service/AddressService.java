@@ -6,6 +6,8 @@ import com.example.StoreManagement.model.dtoRequest.AddressDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.AddressDtoResponse;
 import com.example.StoreManagement.model.entity.Address;
 import com.example.StoreManagement.model.repository.AddressRepository;
+import com.example.StoreManagement.model.repository.CustomerAddressRepository;
+import com.example.StoreManagement.model.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +18,19 @@ public class AddressService {
 
     private AddressMapper addressMapper;
     private AddressRepository addressRepository;
+    private CustomerAddressRepository customerAddressRepository;
+    private StoreRepository storeRepository;
 
     public AddressService(
            AddressMapper addressMapper,
-           AddressRepository addressRepository
+           AddressRepository addressRepository,
+           CustomerAddressRepository customerAddressRepository,
+           StoreRepository storeRepository
     ) {
         this.addressMapper = addressMapper;
         this.addressRepository = addressRepository;
+        this.customerAddressRepository = customerAddressRepository;
+        this.storeRepository = storeRepository;
     }
 
     public List<AddressDtoResponse> findAll() {
@@ -59,6 +67,9 @@ public class AddressService {
     public void delete(Long id) {
         Address address = this.addressRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Address not found with this id"));
+
+        if (this.storeRepository.existsByAddressId(id) || this.customerAddressRepository.existsByAddressId(id))
+            throw new IllegalStateException("Address already in use");
 
         this.addressRepository.delete(address);
     }

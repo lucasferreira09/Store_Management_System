@@ -1,7 +1,8 @@
 package com.example.StoreManagement.model.dtoResponse;
 
-public record CustomerDtoResponse(
+public record CustomerDtoDetailResponse(
         Long id,
         String name,
+        String cpf,
         String email
 ) {}

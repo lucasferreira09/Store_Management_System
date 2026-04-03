@@ -1,6 +1,7 @@
 package com.example.StoreManagement.controller;
 
 import com.example.StoreManagement.model.dtoRequest.CustomerDtoPostRequest;
+import com.example.StoreManagement.model.dtoResponse.CustomerDtoDetailResponse;
 import com.example.StoreManagement.model.dtoResponse.CustomerDtoResponse;
 import com.example.StoreManagement.service.CustomerService;
 import jakarta.validation.Valid;
@@ -49,14 +50,14 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<CustomerDtoResponse> create(@RequestBody @Valid CustomerDtoPostRequest customerDtoPostRequest) {
+    public ResponseEntity<CustomerDtoDetailResponse> create(@RequestBody @Valid CustomerDtoPostRequest customerDtoPostRequest) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(this.customerService.create(customerDtoPostRequest));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CustomerDtoResponse> update(
+    public ResponseEntity<CustomerDtoDetailResponse> update(
             @PathVariable Long id, @RequestBody @Valid CustomerDtoPostRequest customerDtoPostRequest
     ) {
         return ResponseEntity

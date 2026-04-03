@@ -2,6 +2,7 @@ package com.example.StoreManagement.mapstruct.mappers;
 
 import com.example.StoreManagement.model.dtoRequest.StoreDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.StoreDtoPutRequest;
+import com.example.StoreManagement.model.dtoResponse.StoreDtoDetailResponse;
 import com.example.StoreManagement.model.dtoResponse.StoreDtoResponse;
 import com.example.StoreManagement.model.entity.Store;
 import org.mapstruct.Mapper;
@@ -15,6 +16,9 @@ public interface StoreMapper {
 
     @Mapping(source = "address.id", target = "addressID")
     StoreDtoResponse entityToDtoResponse(Store store);
+
+    @Mapping(source = "address.id", target = "addressID")
+    StoreDtoDetailResponse entityToDtoDetailResponse(Store store);
 
     @Mapping(source = "addressID", target = "address.id")
     Store dtoPostRequestToEntity(StoreDtoPostRequest storeDtoPostRequest);

@@ -40,11 +40,11 @@ public class ProductController {
                 .body(this.productService.findByName(name));
     }
 
-    @GetMapping("/categoryId/{categoryId}")
-    public ResponseEntity<List<ProductDtoResponse>> getByCategoryId(@PathVariable Long categoryId) {
+    @GetMapping("/category/{id}")
+    public ResponseEntity<List<ProductDtoResponse>> getByCategoryId(@PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.productService.findByCategoryId(categoryId));
+                .body(this.productService.findByCategoryId(id));
     }
     @GetMapping("/barcode/{barcode}")
     public ResponseEntity<ProductDtoResponse> getByBarcode(@PathVariable String barcode) {

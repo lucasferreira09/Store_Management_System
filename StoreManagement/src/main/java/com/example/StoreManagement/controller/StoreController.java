@@ -2,6 +2,7 @@ package com.example.StoreManagement.controller;
 
 import com.example.StoreManagement.model.dtoRequest.StoreDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.StoreDtoPutRequest;
+import com.example.StoreManagement.model.dtoResponse.StoreDtoDetailResponse;
 import com.example.StoreManagement.model.dtoResponse.StoreDtoResponse;
 import com.example.StoreManagement.service.StoreService;
 import jakarta.validation.Valid;
@@ -60,14 +61,14 @@ public class StoreController {
     }
 
     @PostMapping()
-    public ResponseEntity<StoreDtoResponse> create(@RequestBody @Valid StoreDtoPostRequest storeDtoPostRequest) {
+    public ResponseEntity<StoreDtoDetailResponse> create(@RequestBody @Valid StoreDtoPostRequest storeDtoPostRequest) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(this.storeService.create(storeDtoPostRequest));
     }
 
     @PutMapping("/id/{id}")
-    public ResponseEntity<StoreDtoResponse> update(@PathVariable Long id, @RequestBody @Valid StoreDtoPutRequest dtoPutRequest) {
+    public ResponseEntity<StoreDtoDetailResponse> update(@PathVariable Long id, @RequestBody @Valid StoreDtoPutRequest dtoPutRequest) {
 
         return ResponseEntity.
                 status(HttpStatus.OK)
@@ -75,7 +76,7 @@ public class StoreController {
     }
 
     @PutMapping("/storeId/{storeId}/cnpj/{cnpj}")
-    public ResponseEntity<StoreDtoResponse> update(@PathVariable Long storeId, @PathVariable String cnpj) {
+    public ResponseEntity<StoreDtoDetailResponse> update(@PathVariable Long storeId, @PathVariable String cnpj) {
 
         return ResponseEntity.
                 status(HttpStatus.OK)

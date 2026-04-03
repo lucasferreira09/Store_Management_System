@@ -3,6 +3,7 @@ package com.example.StoreManagement.model.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
 
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "product")
+@SQLDelete(sql = "UPDATE product set ACTIVE = false WHERE id = ?")
 public class Product {
 
     @Id
@@ -30,13 +32,15 @@ public class Product {
     private String photo;
 
     @Column(name = "sale_price", nullable = false)
-    private BigDecimal sale_price;
+    private BigDecimal salePrice;
 
     @Column(name = "cost_price", nullable = false)
-    private BigDecimal cost_price;
+    private BigDecimal costPrice;
+
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
     private Category category;
-
 }

@@ -6,6 +6,7 @@ import com.example.StoreManagement.model.dtoResponse.CategoryDtoResponse;
 import com.example.StoreManagement.model.entity.Category;
 import com.example.StoreManagement.model.repository.CategoryRepository;
 import com.example.StoreManagement.model.repository.ProductRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -26,45 +27,60 @@ public class CategoryService {
     }
 
     public List<CategoryDtoResponse> findAll() {
-        List<Category> allCategories = this.categoryRepository.findAll();
+        List<Category> categories = this.categoryRepository.findByActiveTrue();
 
-        return this.categoryMapper.entitiesToAllDtoResponse(allCategories);
+        return this.categoryMapper.entitiesToAllDtoResponse(categories);
     }
 
     public CategoryDtoResponse findById(Long id) {
-        Category category = this.categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found!"));
+        Category category = this.categoryRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found!"));
 
         return this.categoryMapper.entityToDtoResponse(category);
     }
 
     public List<CategoryDtoResponse> findByName(String name) {
 
-        List<Category> category = this.categoryRepository.findByName(name);
+        List<Category> category = this.categoryRepository.findByNameAndActiveTrue(name);
         return this.categoryMapper.entitiesToAllDtoResponse(category);
     }
 
-    public CategoryDtoResponse create(CategoryDtoPostRequest categoryDtoPostRequest) {
-        Category categoryEntity = this.categoryMapper.dtoPostToEntity(categoryDtoPostRequest);
+    public CategoryDtoResponse create(CategoryDtoPostRequest dtoPostRequest) {
 
-        return this.categoryMapper.entityToDtoResponse(this.categoryRepository.save(categoryEntity));
+        Category category = this.categoryRepository.findByName(dtoPostRequest.name());
+        if (category != null) {
+            if (category.isActive())
+                throw new EntityExistsException("Category already exists");
+
+            category.setActive(true);
+            return this.categoryMapper.entityToDtoResponse(this.categoryRepository.save(category));
+        }
+
+        category = this.categoryMapper.dtoPostToEntity(dtoPostRequest);
+        return this.categoryMapper.entityToDtoResponse(this.categoryRepository.save(category));
     }
 
-    public CategoryDtoResponse update(Long id, CategoryDtoPostRequest categoryDtoPostRequest) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with this id"));
 
-        Category updatedCategory = this.categoryMapper.dtoPostToEntity(categoryDtoPostRequest);
+    public CategoryDtoResponse update(Long id, CategoryDtoPostRequest dtoPostRequest) {
+        Category category = categoryRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID"));
+
+        Category existingByName = this.categoryRepository.findByName(dtoPostRequest.name());
+        if (existingByName != null)
+            throw new EntityExistsException("Category already in use");
+
+        Category updatedCategory = this.categoryMapper.dtoPostToEntity(dtoPostRequest);
         updatedCategory.setId(category.getId());
 
         this.categoryRepository.save(updatedCategory);
-
         return this.categoryMapper.entityToDtoResponse(updatedCategory);
     }
 
     public void delete(Long id) {
-        Category category = this.categoryRepository.findById(id)
+        Category category = this.categoryRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Category not found with this id"));
 
         this.categoryRepository.delete(category);
     }
 }
+
