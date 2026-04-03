@@ -8,7 +8,7 @@ public record StoreDtoPostRequest(
         @NotBlank(message = "CNPJ name must not be empty")
         String cnpj,
 
-        String phone_number,
+        String phoneNumber,
 
         @NotBlank(message = "Email must not be empty")
         String email,

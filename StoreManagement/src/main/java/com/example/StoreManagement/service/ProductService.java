@@ -132,8 +132,8 @@ public class ProductService {
         product.setName(dtoPostRequest.name());
         product.setDescription(dtoPostRequest.description());
         product.setPhoto(dtoPostRequest.photo());
-        product.setSale_price(dtoPostRequest.sale_price());
-        product.setCost_price(dtoPostRequest.cost_price());
+        product.setSalePrice(dtoPostRequest.salePrice());
+        product.setCostPrice(dtoPostRequest.costPrice());
         product.setCategory(category);
         return this.productRepository.save(product);
     }

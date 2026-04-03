@@ -3,7 +3,7 @@ package com.example.StoreManagement.model.dtoResponse;
 public record StoreDtoResponse(
         Long id,
         String name,
-        String phone_number,
+        String phoneNumber,
         String email,
         Long addressID
 ) {}

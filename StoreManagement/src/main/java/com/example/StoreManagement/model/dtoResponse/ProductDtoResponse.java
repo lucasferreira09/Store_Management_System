@@ -5,7 +5,7 @@ public record ProductDtoResponse(
         String description,
         String barcode,
         String photo,
-        String sale_price,
-        String cost_price,
+        String salePrice,
+        String costPrice,
         Long categoryID
 ) {}

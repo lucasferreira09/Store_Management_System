@@ -34,14 +34,14 @@ public class StockMovementHistory {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "sale_id", nullable = true)
+    @Column(name = "saleId", nullable = true)
     private Integer saleId;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "createdAt", nullable = false)
     private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "inventory_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "inventoryId", referencedColumnName = "id", nullable = false)
     private Inventory inventory;
 
 

@@ -24,11 +24,11 @@ public class Inventory {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "store_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "storeId", referencedColumnName = "id", nullable = false)
     private Store store;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "productId", referencedColumnName = "id", nullable = false)
     private Product product;
 
     @Column(name = "quantity", nullable = false)

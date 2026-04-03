@@ -16,13 +16,13 @@ public record ProductDtoPostRequest(
 
         String photo,
 
-        @NotNull(message = "SalePrice product must not be empty")
+        @NotNull(message = "Sale Price product must not be empty")
         @PositiveOrZero(message = "CostPrice must be positive")
-        BigDecimal sale_price,
+        BigDecimal salePrice,
 
-        @NotNull(message = "CostPrice product must not be empty")
+        @NotNull(message = "Cost Price product must not be empty")
         @PositiveOrZero(message = "CostPrice must be positive")
-        BigDecimal cost_price,
+        BigDecimal costPrice,
 
         @NotNull(message = "CategoryID must not be empty")
         Long categoryID

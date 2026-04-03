@@ -15,10 +15,10 @@ public class CustomerAddress {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "customerId", referencedColumnName = "id", nullable = false)
     private Customer customer;
 
     @ManyToOne
-    @JoinColumn(name = "address_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "addressId", referencedColumnName = "id", nullable = false)
     private Address address;
 }

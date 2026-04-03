@@ -64,6 +64,9 @@ public class StoreService {
     }
 
     public StoreDtoDetailResponse create(StoreDtoPostRequest dtoPostRequest) {
+        if (dtoPostRequest.cnpj().length() != 13)
+            throw new RuntimeException("Invalid CNPJ");
+
         Store existingByCnpj = this.storeRepository.findByCnpj(dtoPostRequest.cnpj());
 
         if (existingByCnpj != null) {
@@ -157,7 +160,7 @@ public class StoreService {
         }
 
         store.setName(dtoPostRequest.name());
-        store.setPhone_number(dtoPostRequest.phone_number());
+        store.setPhoneNumber(dtoPostRequest.phoneNumber());
         store.setEmail(dtoPostRequest.email());
         store.setActive(true);
         return this.storeRepository.save(store);

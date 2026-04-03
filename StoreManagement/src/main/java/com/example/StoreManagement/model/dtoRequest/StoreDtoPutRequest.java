@@ -11,6 +11,6 @@ public record StoreDtoPutRequest(
         @NotBlank(message = "Email must not be empty")
         String email,
 
-        String phone_number,
+        String phoneNumber,
         Long addressID
 ) {}

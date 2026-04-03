@@ -22,7 +22,7 @@ public class Store {
     @Column(name = "cnpj", nullable = false, unique = true)
     private String cnpj;
 
-    @Column(name = "phone_number", nullable = false)
+    @Column(name = "phoneNumber", nullable = false)
     private String phoneNumber;
 
     @Column(name = "email", nullable = false, unique = true)
@@ -32,6 +32,6 @@ public class Store {
     private boolean active = true;
 
     @ManyToOne
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    @JoinColumn(name = "addressId", referencedColumnName = "id")
     private Address address;
 }

@@ -4,7 +4,7 @@ public record StoreDtoDetailResponse(
         Long id,
         String name,
         String cnpj,
-        String phone_number,
+        String phoneNumber,
         String email,
         Long addressID
 ) {}

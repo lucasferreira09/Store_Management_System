@@ -31,16 +31,16 @@ public class Product {
     @Column(name = "photo")
     private String photo;
 
-    @Column(name = "sale_price", nullable = false)
+    @Column(name = "salePrice", nullable = false)
     private BigDecimal salePrice;
 
-    @Column(name = "cost_price", nullable = false)
+    @Column(name = "costPrice", nullable = false)
     private BigDecimal costPrice;
 
     @Column(name = "active", nullable = false)
     private boolean active = true;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "categoryId", referencedColumnName = "id", nullable = false)
     private Category category;
 }

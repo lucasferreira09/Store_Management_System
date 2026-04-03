@@ -10,7 +10,7 @@ public record CustomerDtoPostRequest(
         @NotBlank(message = "CPF must not be empty")
         String cpf,
 
-        @NotBlank(message = "Phone Number must not be empty")
+        @NotBlank(message = "Phone number must not be empty")
         String phoneNumber,
 
         @NotBlank(message = "Email must not be empty")

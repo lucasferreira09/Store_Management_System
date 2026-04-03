@@ -17,12 +17,12 @@ public record ProductDtoPutRequest(
 
         String photo,
 
-        @NotNull(message = "SalePrice product must not be empty")
-        @PositiveOrZero(message = "CostPrice must be positive")
-        BigDecimal sale_price,
+        @NotNull(message = "Sale Price product must not be empty")
+        @PositiveOrZero(message = "Cost Price must be positive")
+        BigDecimal salePrice,
 
-        @NotNull(message = "CostPrice product must not be empty")
-        @PositiveOrZero(message = "CostPrice must be positive")
-        BigDecimal cost_price
+        @NotNull(message = "Cost Price product must not be empty")
+        @PositiveOrZero(message = "Cost Price must be positive")
+        BigDecimal costPrice
 ) {
 }

@@ -1,6 +1,7 @@
 create table category (
 	id serial primary key,
-	name varchar(50) not null
+	name varchar(50) not null unique,
+	active boolean not null default true
 );
 
 create table product (
@@ -11,6 +12,7 @@ create table product (
 	photo varchar(255),
 	sale_price numeric(10,2) constraint chk_sale_price_positive check (sale_price > 0),
 	cost_price numeric(10,2) constraint chk_cost_price_positive check (cost_price > 0),
+	active boolean not null default true,
 	category_id INTEGER not null,
 	constraint fk_category foreign key (category_id) references category (id)
 );
@@ -19,8 +21,9 @@ create table customer (
 	id serial primary key,
 	name varchar(100) not null,
 	cpf varchar(11) unique not null constraint check_length_cpf check (length(cpf)=11),
-	phone_number varchar(20),
-	email varchar(100) unique
+	phone_number varchar(20) not null,
+	email varchar(100) unique not null,
+	active boolean not null default true
 );
 
 create table address (
@@ -29,37 +32,39 @@ create table address (
 	neighbourhood varchar(100) not null,
 	complement varchar(20),
 	number varchar(10),
-	state varchar(50) not null,
 	city varchar(50) not null,
+	state varchar(50) not null,
 	zip varchar(20) not null
 );
 
 create table customer_address (
 	id seriaL primary key,
-	customer_id INTEGER,
-	address_id INTEGER,
+	customer_id INTEGER not null,
+	address_id INTEGER not null,
 	constraint fk_customer foreign key (customer_id) references customer (id),
-	constraint fk_address foreign key (address_id) references address (id)	
+	constraint fk_address foreign key (address_id) references address (id) ON DELETE RESTRICT
 );
 
 create table store (
 	id serial primary key,
 	name varchar(100) not null,
 	cnpj varchar(13) unique not null constraint check_length_cnpj check (length(cnpj)=13),
-	phone_number varchar(20),
-	email varchar(100) unique,
+	phone_number varchar(20) not null,
+	email varchar(100) unique not null,
 	address_id INTEGER null,
+	active boolean not null default true,
 	constraint fk_address foreign key (address_id) references address (id)
 );
 
-
 create table inventory (
-	quantity INTEGER not null,
-	store_id serial,
-	product_id serial,
-	constraint pk_inventory primary key (store_id, product_id),
+	id serial primary key,
+	quantity INTEGER not null constraint check_quantity_positive check(quantity>=0),
+	store_id INTEGER not null,
+	product_id INTEGER not null,
+	active boolean not null default true,
 	constraint fk_store foreign key (store_id) references store (id),
-	constraint fk_product foreign key (product_id) references product (id)
+	constraint fk_product foreign key (product_id) references product (id),
+	constraint uniquestoreandproduct unique (store_id, product_id)
 );
 
 
@@ -68,23 +73,29 @@ create table orders (
 	status varchar(20) not null,
 	date timestamp not null,
 	total_amount numeric(10,2) not null,
+	street VARCHAR(100) not null,
+	number VARCHAR(10),
+	city VARCHAR(50) not null,
+	state VARCHAR(50) not null,
+	zip VARCHAR(20) not null,
 	customer_id INTEGER,
 	store_id INTEGER,
 	constraint fk_customer foreign key (customer_id) references customer (id),
 	constraint fk_store foreign key (store_id) references store (id)
 );
 
-create table orderitem (
+create table order_item (
 	id serial primary key,
-	sale_price numeric(10,2) not null,
 	quantity INTEGER not null check (quantity > 0),
+	sale_price numeric(10,2) not null,
+	total_price numeric(10,2) not null,
 	order_id INTEGER,
 	product_id INTEGER,
-	constraint fk_orders foreign key (order_id) references orders (id),
+	constraint fk_order foreign key (order_id) references orders (id),
 	constraint fk_product foreign key (product_id) references product (id)
 );
 
-create table Payment (
+create table payment (
 	id serial primary key,
 	date timestamp not null,
 	method varchar(20),
@@ -92,3 +103,18 @@ create table Payment (
 	order_id INTEGER,
 	constraint fk_orders foreign key (order_id) references orders (id)
 );
+
+
+create type stock_movement_type as enum ('IN', 'OUT', 'ADJUSTMENT');
+create type stock_movement_reason as enum ('SALE', 'RESTOCK', 'BROKEN', 'STOLEN');
+
+create table stock_movement_history(
+	id serial primary key,
+	type stock_movement_type not null,
+	reason stock_movement_reason not null,
+	quantity INTEGER not null constraint check_valid_quantity check(quantity >= 0),
+	sale_id INTEGER null,
+	created_at timestamp not null default now(),
+	inventory_id INTEGER not null,
+	constraint fk_inventory foreign key (inventory_id) references inventory (id)	
+); 
