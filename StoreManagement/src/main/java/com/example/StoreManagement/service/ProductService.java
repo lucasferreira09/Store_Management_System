@@ -26,12 +26,15 @@ public class ProductService {
             ProductMapper productMapper,
             CategoryMapper categoryMapper
     ) {
+
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productMapper = productMapper;
     }
 
     public List<ProductDtoResponse> findAll() {
+
+
 
         List<Product> products = this.productRepository.findByActiveTrueAndCategoryActiveTrue();
         return this.productMapper.entitiesToAllDtoResponse(products);

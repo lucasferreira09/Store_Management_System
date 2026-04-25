@@ -1,6 +1,7 @@
 package com.example.StoreManagement.model.repository;
 
 import com.example.StoreManagement.model.entity.Product;
+import org.hibernate.query.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,4 +17,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Product findByBarcode(String barcode);
     Product findByBarcodeAndActiveTrue(String barcode);
     List<Product> findByCategoryIdAndActiveTrue(Long id);
+
 }

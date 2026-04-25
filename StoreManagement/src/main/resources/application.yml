@@ -15,7 +15,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto:
-        none
+        update
     database-platform:
       org.hibernate.dialect.PostgreSQLDialect
     properties:
@@ -23,3 +23,4 @@ spring:
           true
     show-sql:
       true
+    open-in-view: false

@@ -36,6 +36,7 @@ public class InventoryService {
             ProductRepository productRepository,
             StoreRepository storeRepository
     ) {
+
         this.inventoryRepository = inventoryRepository;
         this.inventoryMapper = inventoryMapper;
         this.stockMovementHistoryRespository = stockMovementHistoryRespository;

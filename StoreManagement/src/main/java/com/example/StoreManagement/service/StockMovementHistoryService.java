@@ -13,9 +13,8 @@ public class StockMovementHistoryService {
     private StockMovementHistoryRespository stockMovementHistoryRespository;
     private StockMovementHistoryMapper stockMovementHistoryMapper;
 
-    public StockMovementHistoryService(
-            StockMovementHistoryRespository stockMovementHistoryRespository,
-            StockMovementHistoryMapper stockMovementHistoryMapper
+    public StockMovementHistoryService(StockMovementHistoryRespository stockMovementHistoryRespository,
+                                       StockMovementHistoryMapper stockMovementHistoryMapper
     ) {
         this.stockMovementHistoryRespository = stockMovementHistoryRespository;
         this.stockMovementHistoryMapper = stockMovementHistoryMapper;
