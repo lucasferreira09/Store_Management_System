@@ -14,6 +14,8 @@ public interface OrderItemMapper {
     @Mapping(source = "product.id", target = "productId")
     OrderItemDtoResponse entityToDtoResponse(OrderItem orderItem);
 
+    @Mapping(source = "productId", target = "product.id")
+    @Mapping(source = "storeId", target = "store.id")
     OrderItem dtoPostRequestToEntity(OrderItemDtoPostRequest orderItemDtoPostRequest);
 
     List<OrderItemDtoResponse> entitiesToDtoResponse(List<OrderItem> orderItems);

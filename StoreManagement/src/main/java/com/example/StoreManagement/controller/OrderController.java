@@ -13,11 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/pedidos")
-public class PedidoController {
+@RequestMapping("/orders")
+public class OrderController {
     private OrderService orderService;
 
-    public PedidoController(OrderService orderService) {
+    public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
 
@@ -55,7 +55,7 @@ public class PedidoController {
     }
 
     @PostMapping()
-    public ResponseEntity<Void> create(@RequestBody @Valid OrderDtoPostRequest orderDtoPostRequest) {
+    public ResponseEntity<Void> create(@RequestBody @Valid OrderDtoPostRequest orderDtoPostRequest) throws IllegalAccessException {
         this.orderService.create(orderDtoPostRequest);
         return ResponseEntity.noContent().build();
     }

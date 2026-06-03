@@ -2,6 +2,7 @@ package com.example.StoreManagement.model.dtoResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record OrderDetailsDtoResponse(
         Long id,
@@ -14,5 +15,6 @@ public record OrderDetailsDtoResponse(
         String state,
         String zip,
         Long customerId,
-        Long storeId
+        Long storeId,
+        List<OrderItemDtoResponse> orderItems
 ) {}

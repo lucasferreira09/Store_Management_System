@@ -11,10 +11,8 @@ import org.hibernate.annotations.SQLDelete;
         name = "inventory",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "UniqueStoreAndProduct",
-                        columnNames = {"store_id", "product_id"}
-                )
-        })
+                        name = "unique_store_product", columnNames = {"store_id", "product_id"}
+                )})
 @SQLDelete(sql = "UPDATE inventory set active = false WHERE id = ?")
 public class Inventory {
 

@@ -6,6 +6,5 @@ public record OrderItemDtoResponse(
         Long id,
         Long productId,
         Integer quantity,
-        BigDecimal salePrice,
-        BigDecimal totalPrice
+        BigDecimal salePrice
 ) {}

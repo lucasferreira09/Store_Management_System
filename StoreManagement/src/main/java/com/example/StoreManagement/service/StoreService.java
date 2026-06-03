@@ -63,8 +63,10 @@ public class StoreService {
         return this.storeMapper.entitiesToDtoResponse(stores);
     }
 
+
+
     public StoreDtoDetailResponse create(StoreDtoPostRequest dtoPostRequest) {
-        if (dtoPostRequest.cnpj().length() != 13)
+        if (dtoPostRequest.cnpj().length() != 13) 
             throw new RuntimeException("Invalid CNPJ");
 
         Store existingByCnpj = this.storeRepository.findByCnpj(dtoPostRequest.cnpj());
@@ -180,4 +182,5 @@ public class StoreService {
         if (existingByCnpj != null && !existingByCnpj.getId().equals(currentStoreId))
             throw new EntityExistsException("This CNPJ already belongs to another Store");
     }
+
 }

@@ -19,6 +19,7 @@ public interface OrderMapper {
     OrderDetailsDtoResponse entityToDetailDtoResponse(Order order);
 
     @Mapping(target = "orderItems", ignore = true)
+    @Mapping(target = "customer.id", ignore = true)
     Order dtoPostRequestToEntity(OrderDtoPostRequest orderDtoPostRequest);
 
     List<OrderDtoResponse> entitiesToDtoResponse(List<Order> orders);

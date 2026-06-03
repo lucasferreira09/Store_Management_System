@@ -34,6 +34,7 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
+
     public List<CustomerDtoResponse> findAll() {
         List<Customer> customer = this.customerRepository.findByActiveTrue();
 

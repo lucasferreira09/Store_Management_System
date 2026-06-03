@@ -4,7 +4,6 @@ import java.util.List;
 
 public record OrderDtoPostRequest(
         Long customerId,
-        Long storeId,
         String street,
         String number,
         String city,

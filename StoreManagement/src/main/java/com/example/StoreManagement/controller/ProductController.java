@@ -1,6 +1,7 @@
 package com.example.StoreManagement.controller;
 
 import com.example.StoreManagement.model.dtoRequest.ProductDtoPostRequest;
+import com.example.StoreManagement.model.dtoRequest.ProductDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -11,12 +12,12 @@ import com.example.StoreManagement.service.ProductService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/produtos")
-public class ProdutoController {
+@RequestMapping("/products")
+public class ProductController {
 
     ProductService productService;
 
-    public ProdutoController(ProductService productService) {
+    public ProductController(ProductService productService) {
         this.productService = productService;
     }
 

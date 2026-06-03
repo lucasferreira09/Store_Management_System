@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -13,7 +14,13 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
     Optional<Inventory> findByIdAndActiveTrue(Long id);
     List<Inventory> findAllByActiveTrue();
+
+    // Fetch ONE inventory per query
     Inventory findByStoreIdAndProductId(Long storeId, Long productId);
+
+    // Fetch ALL inventories in ONE query
+    List<Inventory> findByStoreIdInAndProductIdIn(List<Long> storeIds, List<Long> productIds);
+
 
     @Query("""
         SELECT i from Inventory i WHERE i.store.id = :id

@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/historicoMovimentoEstoque")
-public class HistoricoMovimentoEstoque {
+@RequestMapping("/stockmovementshistory")
+public class StockMovementHistoryController {
 
     private StockMovementHistoryService stockMovementHistoryService;
 
-    public HistoricoMovimentoEstoque(StockMovementHistoryService stockMovementHistoryService) {
+    public StockMovementHistoryController(StockMovementHistoryService stockMovementHistoryService) {
         this.stockMovementHistoryService = stockMovementHistoryService;
     }
 

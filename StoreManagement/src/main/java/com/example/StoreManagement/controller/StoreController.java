@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/loja")
-public class LojaController {
+@RequestMapping("/store")
+public class StoreController {
 
     StoreService storeService;
 
-    public LojaController(StoreService storeService) {
+    public StoreController(StoreService storeService) {
         this.storeService = storeService;
     }
 
