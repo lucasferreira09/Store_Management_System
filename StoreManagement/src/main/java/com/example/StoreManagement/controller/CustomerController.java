@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customers")
-public class CustomerController {
+@RequestMapping("/clientes")
+public class ClienteController {
 
     private CustomerService customerService;
 
-    public CustomerController(CustomerService customerService) {
+    public ClienteController(CustomerService customerService) {
         this.customerService = customerService;
     }
 

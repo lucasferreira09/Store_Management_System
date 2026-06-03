@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/addresses")
-public class AddressController {
+@RequestMapping("/enderecos")
+public class EnderecoController {
 
     private AddressService addressService;
 
-    public AddressController(AddressService addressService) {
+    public EnderecoController(AddressService addressService) {
         this.addressService = addressService;
     }
 

@@ -7,11 +7,11 @@ spring:
       8080
   datasource:
     url:
-      jdbc:postgresql://localhost:5432/StoreManagementDB
+      jdbc:postgresql://localhost:5432/YOUR_DATABASE
     username:
-      postgres
+      YOUR_USERNAME
     password:
-      0468
+      YOUR_PASSWORD
   jpa:
     hibernate:
       ddl-auto:
@@ -19,8 +19,8 @@ spring:
     database-platform:
       org.hibernate.dialect.PostgreSQLDialect
     properties:
-      hibernate.format_slq:
-          true
+      hibernate:
+        format_sql: true
     show-sql:
       true
     open-in-view: false
