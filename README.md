@@ -1,6 +1,6 @@
 # Store_Management_System
 
-## REST API developed for store, clients, products, orders and stock management🛒🛍️
+## REST API developed for Stores, clients, products, orders and stock management🛒🛍️
 
 #
 
@@ -25,7 +25,7 @@
 
 - Controller
 - Service
-- Repositoru
+- Repository
 - DTOs
 - Exception Handler
 - Validation
