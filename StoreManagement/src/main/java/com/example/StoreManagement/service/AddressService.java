@@ -9,29 +9,20 @@ import com.example.StoreManagement.model.repository.AddressRepository;
 import com.example.StoreManagement.model.repository.CustomerAddressRepository;
 import com.example.StoreManagement.model.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class AddressService {
 
-    private AddressMapper addressMapper;
-    private AddressRepository addressRepository;
-    private CustomerAddressRepository customerAddressRepository;
-    private StoreRepository storeRepository;
+    private final AddressMapper addressMapper;
+    private final AddressRepository addressRepository;
+    private final CustomerAddressRepository customerAddressRepository;
+    private final StoreRepository storeRepository;
 
-    public AddressService(
-           AddressMapper addressMapper,
-           AddressRepository addressRepository,
-           CustomerAddressRepository customerAddressRepository,
-           StoreRepository storeRepository
-    ) {
-        this.addressMapper = addressMapper;
-        this.addressRepository = addressRepository;
-        this.customerAddressRepository = customerAddressRepository;
-        this.storeRepository = storeRepository;
-    }
 
     public List<AddressDtoResponse> findAll() {
         List<Address> address = this.addressRepository.findAll();

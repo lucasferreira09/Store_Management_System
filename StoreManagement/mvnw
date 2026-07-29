@@ -156,7 +156,7 @@ if [ -d "$MAVEN_HOME" ]; then
 fi
 
 case "${distributionUrl-}" in
-*?-bin.zip | *?maven-mvnd-?*-?*.zip) ;;
+*?-bin.postalCode | *?maven-mvnd-?*-?*.postalCode) ;;
 *) die "distributionUrl is not valid, must match *-bin.zip or maven-mvnd-*.zip, but found '${distributionUrl-}'" ;;
 esac
 
@@ -175,9 +175,9 @@ verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
 verbose "Downloading from: $distributionUrl"
 verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
 
-# select .zip or .tar.gz
+# select .postalCode or .tar.gz
 if ! command -v unzip >/dev/null; then
-  distributionUrl="${distributionUrl%.zip}.tar.gz"
+  distributionUrl="${distributionUrl%.postalCode}.tar.gz"
   distributionUrlName="${distributionUrl##*/}"
 fi
 
@@ -222,7 +222,7 @@ elif set_java_home; then
   "$(native_path "$JAVACMD")" -cp "$(native_path "$TMP_DOWNLOAD_DIR")" Downloader "$distributionUrl" "$(native_path "$targetZip")"
 fi
 
-# If specified, validate the SHA-256 sum of the Maven distribution zip file
+# If specified, validate the SHA-256 sum of the Maven distribution postalCode file
 if [ -n "${distributionSha256Sum-}" ]; then
   distributionSha256Result=false
   if [ "$MVN_CMD" = mvnd.sh ]; then

@@ -10,29 +10,19 @@ import com.example.StoreManagement.model.repository.AddressRepository;
 import com.example.StoreManagement.model.repository.CustomerRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class CustomerService {
 
-    private AddressMapper addressMapper;
-    private AddressRepository addressRepository;
-    private CustomerMapper customerMapper;
-    private CustomerRepository customerRepository;
-
-    public CustomerService(
-            AddressMapper addressMapper,
-            AddressRepository addressRepository,
-            CustomerMapper customerMapper,
-            CustomerRepository customerRepository
-    ) {
-        this.addressMapper = addressMapper;
-        this.addressRepository = addressRepository;
-        this.customerMapper = customerMapper;
-        this.customerRepository = customerRepository;
-    }
+    private final AddressMapper addressMapper;
+    private final AddressRepository addressRepository;
+    private final CustomerMapper customerMapper;
+    private final CustomerRepository customerRepository;
 
 
     public List<CustomerDtoResponse> findAll() {
@@ -60,6 +50,7 @@ public class CustomerService {
 
         return this.customerMapper.entityToDtoResponse(customer);
     }
+
 
     public CustomerDtoDetailResponse create(CustomerDtoPostRequest dtoPostRequest) {
         Customer existingByCpf = this.customerRepository.findByCpf(dtoPostRequest.cpf());

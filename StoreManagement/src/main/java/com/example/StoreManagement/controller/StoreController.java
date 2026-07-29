@@ -6,21 +6,20 @@ import com.example.StoreManagement.model.dtoResponse.StoreDtoDetailResponse;
 import com.example.StoreManagement.model.dtoResponse.StoreDtoResponse;
 import com.example.StoreManagement.service.StoreService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/store")
 public class StoreController {
 
-    StoreService storeService;
+    private final StoreService storeService;
 
-    public StoreController(StoreService storeService) {
-        this.storeService = storeService;
-    }
 
     @GetMapping()
     public List<StoreDtoResponse> getAll() {

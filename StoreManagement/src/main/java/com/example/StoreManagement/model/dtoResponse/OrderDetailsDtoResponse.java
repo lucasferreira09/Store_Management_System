@@ -13,7 +13,7 @@ public record OrderDetailsDtoResponse(
         String number,
         String city,
         String state,
-        String zip,
+        String postalCode,
         Long customerId,
         Long storeId,
         List<OrderItemDtoResponse> orderItems

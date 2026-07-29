@@ -3,23 +3,24 @@ package com.example.StoreManagement.controller;
 import com.example.StoreManagement.model.PaginationRequest;
 import com.example.StoreManagement.model.PagingResult;
 import com.example.StoreManagement.model.dtoRequest.OrderDtoPostRequest;
+import com.example.StoreManagement.model.dtoResponse.OrderCreationDtoResponse;
 import com.example.StoreManagement.model.dtoResponse.OrderDetailsDtoResponse;
 import com.example.StoreManagement.model.dtoResponse.OrderDtoResponse;
 import com.example.StoreManagement.service.OrderService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
-    private OrderService orderService;
 
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
+    private final OrderService orderService;
+
 
     @GetMapping
     public ResponseEntity<PagingResult<OrderDtoResponse>> getAll(
@@ -54,9 +55,11 @@ public class OrderController {
         return ResponseEntity.ok(customerOrders);
     }
 
+
     @PostMapping()
-    public ResponseEntity<Void> create(@RequestBody @Valid OrderDtoPostRequest orderDtoPostRequest) throws IllegalAccessException {
-        this.orderService.create(orderDtoPostRequest);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<OrderCreationDtoResponse> create(@RequestBody @Valid OrderDtoPostRequest orderDtoPostRequest) throws IllegalAccessException {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(this.orderService.create(orderDtoPostRequest));
     }
 }

@@ -1,8 +1,11 @@
 package com.example.StoreManagement.model.entity;
 
+import com.example.StoreManagement.model.entity.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,8 +22,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", columnDefinition = "order_status", nullable = false)
+    private OrderStatus status;
 
     @Column(name = "date", nullable = false)
     private LocalDateTime date;
@@ -40,8 +45,8 @@ public class Order {
     @Column(name = "state", nullable = false)
     private String state;
 
-    @Column(name = "zip", nullable = false)
-    private String zip;
+    @Column(name = "postalCode", nullable = false)
+    private String postalCode;
 
     @ManyToOne
     @JoinColumn(name = "customerId", nullable = false)
@@ -53,6 +58,13 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "paymentId")
+    private Payment payment;
+
+    @Column(name = "providerSessionId")
+    private String providerSessionId;
 
     @PrePersist
     private void onCreate() {

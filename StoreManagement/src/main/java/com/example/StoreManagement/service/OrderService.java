@@ -4,14 +4,20 @@ import com.example.StoreManagement.mapstruct.mappers.OrderItemMapper;
 import com.example.StoreManagement.mapstruct.mappers.OrderMapper;
 import com.example.StoreManagement.model.*;
 import com.example.StoreManagement.model.dtoRequest.*;
+import com.example.StoreManagement.model.dtoResponse.OrderCreationDtoResponse;
 import com.example.StoreManagement.model.dtoResponse.OrderDetailsDtoResponse;
 import com.example.StoreManagement.model.dtoResponse.OrderDtoResponse;
+import com.example.StoreManagement.model.dtoResponse.StripeDtoResponse;
 import com.example.StoreManagement.model.entity.*;
+import com.example.StoreManagement.model.entity.enums.OrderStatus;
+import com.example.StoreManagement.model.entity.enums.PaymentStatus;
 import com.example.StoreManagement.model.entity.enums.StockMovementReason;
 import com.example.StoreManagement.model.entity.enums.StockMovementType;
 import com.example.StoreManagement.model.repository.*;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.SystemException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,43 +26,21 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class OrderService {
 
-    private OrderItemRepository orderItemRepository;
-    private OrderRepository orderRepository;
-    private StoreRepository storeRepository;
-    private ProductRepository productRepository;
-    private CustomerRepository customerRepository;
-    private InventoryRepository inventoryRepository;
-    private InventoryService inventoryService;
-    private StockMovementHistoryRespository stockMovementHistoryRespository;
-    private OrderMapper orderMapper;
-    private OrderItemMapper orderItemMapper;
-
-    public OrderService(
-            OrderItemRepository orderItemRepository,
-            OrderRepository orderRepository,
-            StoreRepository storeRepository,
-            ProductRepository productRepository,
-            CustomerRepository customerRepository,
-            InventoryRepository inventoryRepository,
-            InventoryService inventoryService,
-            StockMovementHistoryRespository stockMovementHistoryRespository,
-            OrderMapper orderMapper,
-            OrderItemMapper orderItemMapper
-    ) {
-        this.orderItemRepository = orderItemRepository;
-        this.orderRepository = orderRepository;
-        this.storeRepository = storeRepository;
-        this.productRepository = productRepository;
-        this.customerRepository = customerRepository;
-        this.inventoryRepository = inventoryRepository;
-        this.inventoryService = inventoryService;
-        this.stockMovementHistoryRespository = stockMovementHistoryRespository;
-        this.orderMapper = orderMapper;
-        this.orderItemMapper = orderItemMapper;
-    }
+    private final OrderItemRepository orderItemRepository;
+    private final OrderRepository orderRepository;
+    private final StoreRepository storeRepository;
+    private final ProductRepository productRepository;
+    private final CustomerRepository customerRepository;
+    private final InventoryRepository inventoryRepository;
+    private final InventoryService inventoryService;
+    private final StockMovementHistoryRespository stockMovementHistoryRespository;
+    private final OrderMapper orderMapper;
+    private final OrderItemMapper orderItemMapper;
+    private final StripeService stripeService;
 
 
     public PagingResult<OrderDtoResponse> findAll(PaginationRequest request) {
@@ -104,21 +88,23 @@ public class OrderService {
 
 
     @Transactional
-    public void create(OrderDtoPostRequest orderRequest) throws IllegalAccessException {
+    public OrderCreationDtoResponse create(OrderDtoPostRequest orderRequest) throws IllegalAccessException {
         Customer customer = this.customerRepository.findById(orderRequest.customerId())
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID"));
 
         if (orderRequest.orderItems() == null || orderRequest.orderItems().isEmpty())
             throw new IllegalAccessException("Order must have at least one item");
 
-        //this.validateDuplicatedItems(orderRequest.orderItems());
+        this.validateDuplicatedItems(orderRequest.orderItems());
 
         List<Long> productsIds = orderRequest.orderItems().stream().map(OrderItemDtoPostRequest::productId).distinct().toList();
         List<Long> storeIds = orderRequest.orderItems().stream().map(OrderItemDtoPostRequest::storeId).distinct().toList();
 
         Map<Long, Product> productMap = this.productRepository.findAllById(productsIds).stream().collect(
                 Collectors.toMap(
-                        Product::getId,product -> product, (existingValue, newValue) -> existingValue
+                        Product::getId,
+                        product -> product,
+                        (existingValue, newValue) -> existingValue
                 ));
 
 
@@ -141,7 +127,13 @@ public class OrderService {
         }
 
         // create orders by store
+        String currency = "BRL";
+        String description = "Order description example";
         List<Order> createdOrders = new ArrayList<>();
+        List<String> orderIds = new ArrayList<>();
+        BigDecimal totalOrderAmount = BigDecimal.ZERO;
+
+
         for (Map.Entry<Long, List<OrderItemDtoPostRequest>> entry : itemsByStore.entrySet()) {
 
             Long storeId = entry.getKey();
@@ -155,9 +147,9 @@ public class OrderService {
             Order order = this.orderMapper.dtoPostRequestToEntity(orderRequest);
             order.setCustomer(customer);
             order.setStore(store);
-            order.setStatus("DONE");
+            order.setStatus(OrderStatus.AWAITING_PAYMENT);
 
-            BigDecimal totalAmount = BigDecimal.ZERO;
+            BigDecimal orderAmount = BigDecimal.ZERO;
             List<OrderItem> orderItemList = new ArrayList<>();
             for (OrderItemDtoPostRequest item : itemsRequested) {
 
@@ -170,20 +162,30 @@ public class OrderService {
                 OrderItemCreated orderItemCreated = this.processOrderItem(orderItemContext);
 
                 orderItemList.add(orderItemCreated.orderItem());
-                totalAmount = totalAmount.add(orderItemCreated.totalPrice());
+                orderAmount = orderAmount.add(orderItemCreated.totalPrice());
             }
 
             order.setOrderItems(orderItemList);
-            order.setTotalAmount(totalAmount);
+            order.setTotalAmount(orderAmount);
             createdOrders.add(order);
+            totalOrderAmount = totalOrderAmount.add(orderAmount);
         }
 
         this.orderRepository.saveAll(createdOrders);
+        createdOrders.forEach(order -> {orderIds.add(order.getId().toString());});
+
+
+        StripeDtoResponse stripeResponse = this.stripeService.createCheckoutPayment(
+                new OrderPaymentRequest(orderIds, totalOrderAmount, currency, description));
+
+        createdOrders.forEach(order -> {order.setProviderSessionId(stripeResponse.sessionId());});
+        this.orderRepository.saveAll(createdOrders);
+
+
+        OrderCreationDtoResponse orderCreationResponse = new OrderCreationDtoResponse(stripeResponse.sessionId(), stripeResponse.url());
+        return orderCreationResponse;
     }
 
-    private void createOrderByStore(Map<Long, List<OrderItemDtoPostRequest>> itemsByStore) {
-
-    }
 
     private void validateDuplicatedItems(List<OrderItemDtoPostRequest> orderItems) throws IllegalAccessException {
         Set<InventoryKey> itemsKeys = new HashSet<>();
@@ -197,7 +199,6 @@ public class OrderService {
                         "StoreID=" + item.storeId() + " | ProductID=" + item.productId());
         }
     }
-
 
     private void validateOrderItem(OrderItemDtoPostRequest item, Inventory inventory, Product product) {
         if (inventory == null || !inventory.isActive())
@@ -241,6 +242,20 @@ public class OrderService {
         return orderItemCreated;
 
     }
+
+
+    public void cancelOrder(String sessionId) {
+        List<Order> orders = this.orderRepository.findByProviderSessionId(sessionId);
+        if (orders == null || orders.isEmpty())
+            throw new EntityNotFoundException("Orders not found for sessionId: " + sessionId);
+
+        for (Order order : orders) {
+
+            order.setStatus(OrderStatus.CANCELLED);
+            this.orderRepository.save(order);
+        }
+    }
+
 
 }
 

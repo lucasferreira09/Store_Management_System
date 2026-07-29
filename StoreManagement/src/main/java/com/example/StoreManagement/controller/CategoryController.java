@@ -4,21 +4,20 @@ import com.example.StoreManagement.model.dtoRequest.CategoryDtoPostRequest;
 import com.example.StoreManagement.model.dtoResponse.CategoryDtoResponse;
 import com.example.StoreManagement.service.CategoryService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/categories")
 public class CategoryController {
 
-    public CategoryService categoryService;
+    public final CategoryService categoryService;
 
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
 
     @GetMapping
     public ResponseEntity<List<CategoryDtoResponse>> getAll() {

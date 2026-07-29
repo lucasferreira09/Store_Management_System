@@ -5,21 +5,20 @@ import com.example.StoreManagement.model.dtoRequest.AddressDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.AddressDtoResponse;
 import com.example.StoreManagement.service.AddressService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/addresses")
 public class AddressController {
 
-    private AddressService addressService;
+    private final AddressService addressService;
 
-    public AddressController(AddressService addressService) {
-        this.addressService = addressService;
-    }
 
     @GetMapping
     public ResponseEntity<List<AddressDtoResponse>> getAll() {

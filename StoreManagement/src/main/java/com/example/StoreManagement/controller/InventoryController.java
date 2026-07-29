@@ -5,21 +5,20 @@ import com.example.StoreManagement.model.dtoRequest.InventoryMovementRequest;
 import com.example.StoreManagement.model.dtoResponse.InventoryDtoResponse;
 import com.example.StoreManagement.service.InventoryService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/inventories")
 public class InventoryController {
 
-    private InventoryService inventoryService;
+    private final InventoryService inventoryService;
 
-    public InventoryController(InventoryService inventoryService) {
-        this.inventoryService = inventoryService;
-    }
 
     @GetMapping
     public ResponseEntity<List<InventoryDtoResponse>> getAll() {

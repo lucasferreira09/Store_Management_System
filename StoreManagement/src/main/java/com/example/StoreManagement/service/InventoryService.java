@@ -14,36 +14,22 @@ import com.example.StoreManagement.model.repository.StockMovementHistoryResposit
 import com.example.StoreManagement.model.repository.StoreRepository;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class InventoryService {
 
-    private InventoryRepository inventoryRepository;
-    private StockMovementHistoryRespository stockMovementHistoryRespository;
-    private InventoryMapper inventoryMapper;
-    private StockMovementHistoryService stockMovementHistoryService;
-    private ProductRepository productRepository;
-    private StoreRepository storeRepository;
+    private final InventoryRepository inventoryRepository;
+    private final StockMovementHistoryRespository stockMovementHistoryRespository;
+    private final InventoryMapper inventoryMapper;
+    private final StockMovementHistoryService stockMovementHistoryService;
+    private final ProductRepository productRepository;
+    private final StoreRepository storeRepository;
 
-    public InventoryService(
-            InventoryRepository inventoryRepository,
-            InventoryMapper inventoryMapper,
-            StockMovementHistoryRespository stockMovementHistoryRespository,
-            StockMovementHistoryService stockMovementHistoryService,
-            ProductRepository productRepository,
-            StoreRepository storeRepository
-    ) {
-
-        this.inventoryRepository = inventoryRepository;
-        this.inventoryMapper = inventoryMapper;
-        this.stockMovementHistoryRespository = stockMovementHistoryRespository;
-        this.stockMovementHistoryService = stockMovementHistoryService;
-        this.productRepository = productRepository;
-        this.storeRepository = storeRepository;
-    }
 
     public List<InventoryDtoResponse> findAll() {
         List<Inventory> inventories = this.inventoryRepository.findAllByActiveTrue();

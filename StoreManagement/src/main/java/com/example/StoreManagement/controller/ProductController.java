@@ -4,6 +4,7 @@ import com.example.StoreManagement.model.dtoRequest.ProductDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.ProductDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,15 +12,13 @@ import com.example.StoreManagement.service.ProductService;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/products")
 public class ProductController {
 
-    ProductService productService;
+    private final ProductService productService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
 
     @GetMapping()
     public List<ProductDtoResponse> getAll() {

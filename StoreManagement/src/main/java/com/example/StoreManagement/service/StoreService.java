@@ -11,22 +11,19 @@ import com.example.StoreManagement.model.repository.AddressRepository;
 import com.example.StoreManagement.model.repository.StoreRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class StoreService {
 
-    private StoreRepository storeRepository;
-    private StoreMapper storeMapper;
-    private AddressRepository addressRepository;
+    private final StoreRepository storeRepository;
+    private final StoreMapper storeMapper;
+    private final AddressRepository addressRepository;
 
-    public StoreService(StoreRepository storeRepository, StoreMapper storeMapper, AddressRepository addressRepository) {
-        this.storeRepository = storeRepository;
-        this.storeMapper = storeMapper;
-        this.addressRepository = addressRepository;
-    }
 
     public List<StoreDtoResponse> findAll() {
         List<Store> stores = this.storeRepository.findByActiveTrue();
