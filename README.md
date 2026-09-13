@@ -95,7 +95,7 @@ Then, the system creates a `StockMovement` to restore the quantity to the invent
 After cancellation, the orders can no longer be modified.
 
 <div>
-            <img alt="Order-Cancellation-Flow" heigh="400" width="400"src="https://github.com/lucasferreira09/Store_Management_System/blob/6fd867e5440fb6d75d1fd0fac30f3e2be2913cdb/screenshots/structure_flows/order_cancellation_flow.png" />
+            <img alt="Order-Cancellation-Flow" heigh="400" width="400"src="/screenshots/structure_flows/order_cancellation_flow.png" />
 </div>
 
 <br>
@@ -111,7 +111,7 @@ Once the payment result is received, the payment service process the result and 
 Even if a payment is not succeed, the corresponding transaction is saved for auditing.
 
 <div>
-            <img alt="Payment-Creation-Flow" heigh="500" width="600"src="https://github.com/lucasferreira09/Store_Management_System/blob/6fd867e5440fb6d75d1fd0fac30f3e2be2913cdb/screenshots/structure_flows/payment_creation_flow.png" />
+            <img alt="Payment-Creation-Flow" heigh="500" width="600"src="screenshots/structure_flows/payment_creation_flow.png" />
 </div>
 
 <br><br>
