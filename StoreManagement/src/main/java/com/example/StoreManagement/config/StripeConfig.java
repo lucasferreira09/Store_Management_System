@@ -18,5 +18,4 @@ public class StripeConfig {
     public void init() {
         Stripe.apiKey = stripeSecretKey;
     }
-
 }

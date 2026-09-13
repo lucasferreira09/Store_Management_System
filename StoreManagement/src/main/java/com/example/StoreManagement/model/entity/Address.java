@@ -33,7 +33,6 @@ public class Address {
     @Column(name = "state", nullable = false)
     private String state;
 
-    @Column(name = "zip", nullable = false)
-    private String zip;
-
+    @Column(name = "postalCode", nullable = false)
+    private String postalCode;
 }

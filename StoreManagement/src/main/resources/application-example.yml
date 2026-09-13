@@ -15,12 +15,24 @@ spring:
   jpa:
     hibernate:
       ddl-auto:
-        none
+        update
     database-platform:
       org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
     show-sql:
       true
     open-in-view: false
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:PUT_YOUR_STRIPE_SECRET_KEY_HERE}
+  webhook-key: ${STRIPE_WEBHOOK_KEY:PUT_YOUR_WEBHOOK_KEY_HERE}
+
+pagbank:
+  url: ${URL:PUT_YOUR_URL_HERE}
+  token: ${PAG_BANK_TOKEN:PUT_YOUR_TOKEN_HERE}
+  notification-checkout-url: ${NOTIFICATION_CHECKOUT_URL:PUT_YOUR_NOTIFICATION_CHECKOUT_URL_HERE}
+  notification-payment-url: ${NOTIFICATION_PAYMENT_URL:PUT_YOUR_NOTIFICATION_PAYMENT_URL_HERE}
+  redirect-url: ${REDIRECT_URL:PUT_YOUR_REDIRECT_URL_HERE}
+  retur-url: ${RETURN_URL:PUT_YOUR_RETURN_URL_HERE}

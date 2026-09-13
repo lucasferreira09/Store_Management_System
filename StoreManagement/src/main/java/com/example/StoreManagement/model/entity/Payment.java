@@ -10,10 +10,9 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import javax.print.attribute.EnumSyntax;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -28,12 +27,15 @@ public class Payment {
     @Column(name = "amount")
     private BigDecimal amount;
 
-    @Column(name = "currency")
+    @Column(name = "currency", length = 5, nullable = false)
     private String currency;
+
+    @Column(name = "checkoutId", updatable = false, nullable = false)
+    private UUID checkoutId;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "paymentStatus", columnDefinition = "payment_status")
+    @Column(name = "paymentStatus", columnDefinition = "payment_status", nullable = false)
     private PaymentStatus paymentStatus;
 
     @Enumerated(EnumType.STRING)
@@ -46,26 +48,21 @@ public class Payment {
     @Column(name = "paymentMethodType", columnDefinition = "payment_method_type", nullable = false)
     private PaymentMethodType paymentMethodType;
 
-    @Column(name = "cardBrand")
-    private String cardBrand;
-
-    @Column(name = "lastCardNumbers")
-    private String lastCardNumbers;
-
-    @Column(name = "providerPaymentId")
-    private String providerPaymentId;
-
-    @Column(name = "providerSessionId")
+    @Column(name = "providerSessionId", nullable = false)
     private String providerSessionId;
 
-    @Column(name = "providerChargeId")
-    private String providerChargeId;
+    @Column(name = "createdAt", columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = false)
+    private Instant createdAt;
 
-    @Column(name = "createdAt", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "expiresAt", columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = false)
+    private Instant expiresAt;
 
-    @OneToMany(mappedBy = "payment")
-    private List<Order> orders;
+    @Column(name = "paidAt", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private Instant paidAt;
 
+    @PrePersist
+    private void onCreate() {
+        this.createdAt = Instant.now();
+    }
 
 }

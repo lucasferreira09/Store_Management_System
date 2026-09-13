@@ -2,6 +2,7 @@ package com.example.StoreManagement.service;
 
 import com.example.StoreManagement.mapstruct.mappers.CategoryMapper;
 import com.example.StoreManagement.mapstruct.mappers.ProductMapper;
+import com.example.StoreManagement.model.PaginationUtils;
 import com.example.StoreManagement.model.dtoRequest.ProductDtoPostRequest;
 import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
 import com.example.StoreManagement.model.entity.Category;
@@ -11,6 +12,7 @@ import com.example.StoreManagement.model.repository.ProductRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

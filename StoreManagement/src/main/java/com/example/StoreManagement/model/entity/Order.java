@@ -8,9 +8,10 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Setter
 @Getter
@@ -27,8 +28,8 @@ public class Order {
     @Column(name = "status", columnDefinition = "order_status", nullable = false)
     private OrderStatus status;
 
-    @Column(name = "date", nullable = false)
-    private LocalDateTime date;
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = false)
+    private Instant created_at;
 
     @Column(name = "totalAmount", nullable = false)
     private BigDecimal totalAmount;
@@ -59,15 +60,6 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "paymentId")
-    private Payment payment;
-
-    @Column(name = "providerSessionId")
-    private String providerSessionId;
-
-    @PrePersist
-    private void onCreate() {
-        this.date = LocalDateTime.now();
-    }
+    @Column(name = "checkoutId", updatable = false, nullable = false)
+    private UUID checkoutId;
 }

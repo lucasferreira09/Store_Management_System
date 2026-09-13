@@ -1,6 +1,10 @@
 package com.example.StoreManagement.service;
 
+import java.util.List;
 import com.example.StoreManagement.mapstruct.mappers.AddressMapper;
+import com.example.StoreManagement.model.PaginationRequest;
+import com.example.StoreManagement.model.PaginationUtils;
+import com.example.StoreManagement.model.PagingResult;
 import com.example.StoreManagement.model.dtoRequest.AddressDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.AddressDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.AddressDtoResponse;
@@ -10,9 +14,10 @@ import com.example.StoreManagement.model.repository.CustomerAddressRepository;
 import com.example.StoreManagement.model.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -24,10 +29,21 @@ public class AddressService {
     private final StoreRepository storeRepository;
 
 
-    public List<AddressDtoResponse> findAll() {
-        List<Address> address = this.addressRepository.findAll();
+    public PagingResult<AddressDtoResponse> findAll(PaginationRequest paginationRequest) {
+        Pageable pageable = PaginationUtils.getPageable(paginationRequest);
+        Page<Address> addressPage = this.addressRepository.findAll(pageable);
 
-        return this.addressMapper.entitiesToDtoResponse(address);
+        List<AddressDtoResponse> addressesDto = addressPage.stream().map(addressMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                addressesDto,
+                addressPage.getTotalPages(),
+                addressPage.getTotalElements(),
+                addressPage.getSize(),
+                addressPage.getNumber(),
+                addressPage.isEmpty(),
+                addressPage.isLast()
+        );
     }
 
     public AddressDtoResponse findById(Long id) {

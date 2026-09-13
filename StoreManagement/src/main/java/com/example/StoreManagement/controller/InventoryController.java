@@ -1,7 +1,7 @@
 package com.example.StoreManagement.controller;
 
 import com.example.StoreManagement.model.dtoRequest.InventoryDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.InventoryMovementRequest;
+import com.example.StoreManagement.model.dtoRequest.StockMovementRequest;
 import com.example.StoreManagement.model.dtoResponse.InventoryDtoResponse;
 import com.example.StoreManagement.service.InventoryService;
 import jakarta.validation.Valid;
@@ -44,7 +44,7 @@ public class InventoryController {
 
 
     @PostMapping("/inventory/movements")
-    public ResponseEntity<Void> create(@RequestBody @Valid InventoryMovementRequest request) {
+    public ResponseEntity<Void> create(@RequestBody @Valid StockMovementRequest.DtoPostRequest request) {
         this.inventoryService.processMovement(request);
 
         return ResponseEntity.ok().build();

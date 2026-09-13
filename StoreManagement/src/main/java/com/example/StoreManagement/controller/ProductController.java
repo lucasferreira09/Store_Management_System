@@ -1,7 +1,6 @@
 package com.example.StoreManagement.controller;
 
 import com.example.StoreManagement.model.dtoRequest.ProductDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.ProductDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

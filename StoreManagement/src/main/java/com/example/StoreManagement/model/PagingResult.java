@@ -2,7 +2,6 @@ package com.example.StoreManagement.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.Collection;
 
 @Data

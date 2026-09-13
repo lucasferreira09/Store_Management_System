@@ -1,16 +1,18 @@
 package com.example.StoreManagement.controller;
 
+import com.example.StoreManagement.model.PaginationRequest;
+import com.example.StoreManagement.model.PagingResult;
 import com.example.StoreManagement.model.dtoRequest.AddressDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.AddressDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.AddressDtoResponse;
 import com.example.StoreManagement.service.AddressService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -19,12 +21,17 @@ public class AddressController {
 
     private final AddressService addressService;
 
-
     @GetMapping
-    public ResponseEntity<List<AddressDtoResponse>> getAll() {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(this.addressService.findAll());
+    public ResponseEntity<PagingResult<AddressDtoResponse>> getAll(
+            @RequestParam(defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(defaultValue = "10", required = false) Integer size,
+            @RequestParam(defaultValue = "id", required = false) String sortField,
+            @RequestParam(defaultValue = "ASC", required = false) Sort.Direction direction
+            ) {
+
+        PaginationRequest request = new PaginationRequest(pageNumber,size, sortField, direction);
+        PagingResult<AddressDtoResponse> orders = this.addressService.findAll(request);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/id/{id}")

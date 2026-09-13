@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @Repository
@@ -15,5 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByCustomerId(Long id, Pageable pageable);
 
-    List<Order> findByProviderSessionId(String id);
+    List<Order> findByCheckoutId(UUID id);
+
+
 }
