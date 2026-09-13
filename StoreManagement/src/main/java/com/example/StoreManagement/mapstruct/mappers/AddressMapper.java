@@ -11,10 +11,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface AddressMapper {
 
-    // @Mapping(source = "customer.id", target = "customerID")
     AddressDtoResponse entityToDtoResponse(Address address);
 
-    // @Mapping(source = "customerID", target = "customer.id")
     Address dtoPostRequestToEntity(AddressDtoPostRequest addressDtoPostRequest);
 
     Address dtoPutRequestToEntity(AddressDtoPutRequest addressDtoPutRequest);

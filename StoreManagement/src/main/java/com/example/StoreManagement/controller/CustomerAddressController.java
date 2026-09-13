@@ -6,21 +6,19 @@ import com.example.StoreManagement.model.dtoResponse.CustomerAddressDetailsRespo
 import com.example.StoreManagement.model.dtoResponse.CustomerAddressResponse;
 import com.example.StoreManagement.service.CustomerAddressService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController()
 @RequestMapping("/customerAddress")
 public class CustomerAddressController {
 
-    private CustomerAddressService customerAddressService;
-
-    public CustomerAddressController(CustomerAddressService customerAddressService) {
-        this.customerAddressService = customerAddressService;
-    }
+    private final CustomerAddressService customerAddressService;
 
     @GetMapping
     public ResponseEntity<List<CustomerAddressResponse>> getAll() {

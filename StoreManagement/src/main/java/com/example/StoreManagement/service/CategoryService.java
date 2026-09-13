@@ -8,23 +8,20 @@ import com.example.StoreManagement.model.repository.CategoryRepository;
 import com.example.StoreManagement.model.repository.ProductRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class CategoryService {
 
-    private CategoryRepository categoryRepository;
-    private CategoryMapper categoryMapper;
-    private ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
+    private final ProductRepository productRepository;
 
-    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper, ProductRepository productRepository) {
-        this.categoryRepository = categoryRepository;
-        this.categoryMapper = categoryMapper;
-        this.productRepository = productRepository;
-    }
 
     public List<CategoryDtoResponse> findAll() {
         List<Category> categories = this.categoryRepository.findByActiveTrue();

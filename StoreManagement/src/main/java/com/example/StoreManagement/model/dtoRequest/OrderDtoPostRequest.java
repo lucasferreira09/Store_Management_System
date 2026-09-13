@@ -8,6 +8,6 @@ public record OrderDtoPostRequest(
         String number,
         String city,
         String state,
-        String zip,
+        String postalCode,
         List<OrderItemDtoPostRequest> orderItems
 ) {}

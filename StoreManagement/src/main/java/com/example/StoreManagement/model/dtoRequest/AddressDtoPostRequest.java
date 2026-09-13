@@ -18,6 +18,6 @@ public record AddressDtoPostRequest(
         @NotBlank(message = "State must not be empty")
         String state,
 
-        @NotBlank(message = "ZIP must not be empty")
-        String zip
+        @NotBlank(message = "Postal code must not be empty")
+        String postalCode
 ) {}

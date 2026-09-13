@@ -1,30 +1,39 @@
 package com.example.StoreManagement.controller;
 
+import com.example.StoreManagement.model.PaginationRequest;
+import com.example.StoreManagement.model.PagingResult;
 import com.example.StoreManagement.model.dtoRequest.StoreDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.StoreDtoPutRequest;
 import com.example.StoreManagement.model.dtoResponse.StoreDtoDetailResponse;
 import com.example.StoreManagement.model.dtoResponse.StoreDtoResponse;
 import com.example.StoreManagement.service.StoreService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/store")
 public class StoreController {
 
-    StoreService storeService;
+    private final StoreService storeService;
 
-    public StoreController(StoreService storeService) {
-        this.storeService = storeService;
-    }
 
     @GetMapping()
-    public List<StoreDtoResponse> getAll() {
-        return this.storeService.findAll();
+    public ResponseEntity<PagingResult<StoreDtoResponse>> getAll(
+            @RequestParam(defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(defaultValue = "10", required = false) Integer size,
+            @RequestParam(defaultValue = "id", required = false) String sortField,
+            @RequestParam(defaultValue = "ASC", required = false) Sort.Direction direction
+    ) {
+        PaginationRequest paginationRequest = new PaginationRequest(pageNumber, size, sortField, direction);
+        PagingResult<StoreDtoResponse> stores = this.storeService.findAll(paginationRequest);
+        return ResponseEntity.ok(stores);
     }
 
     @GetMapping("/id/{id}")

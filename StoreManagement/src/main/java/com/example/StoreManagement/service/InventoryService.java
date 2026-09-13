@@ -2,7 +2,7 @@ package com.example.StoreManagement.service;
 
 import com.example.StoreManagement.mapstruct.mappers.InventoryMapper;
 import com.example.StoreManagement.model.dtoRequest.InventoryDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.InventoryMovementRequest;
+import com.example.StoreManagement.model.dtoRequest.StockMovementRequest;
 import com.example.StoreManagement.model.dtoResponse.InventoryDtoResponse;
 import com.example.StoreManagement.model.entity.Inventory;
 import com.example.StoreManagement.model.entity.Product;
@@ -14,36 +14,23 @@ import com.example.StoreManagement.model.repository.StockMovementHistoryResposit
 import com.example.StoreManagement.model.repository.StoreRepository;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class InventoryService {
 
-    private InventoryRepository inventoryRepository;
-    private StockMovementHistoryRespository stockMovementHistoryRespository;
-    private InventoryMapper inventoryMapper;
-    private StockMovementHistoryService stockMovementHistoryService;
-    private ProductRepository productRepository;
-    private StoreRepository storeRepository;
+    private final InventoryRepository inventoryRepository;
+    private final StockMovementHistoryRespository stockMovementHistoryRespository;
+    private final InventoryMapper inventoryMapper;
+    private final StockMovementHistoryService stockMovementHistoryService;
+    private final ProductRepository productRepository;
+    private final StoreRepository storeRepository;
 
-    public InventoryService(
-            InventoryRepository inventoryRepository,
-            InventoryMapper inventoryMapper,
-            StockMovementHistoryRespository stockMovementHistoryRespository,
-            StockMovementHistoryService stockMovementHistoryService,
-            ProductRepository productRepository,
-            StoreRepository storeRepository
-    ) {
-
-        this.inventoryRepository = inventoryRepository;
-        this.inventoryMapper = inventoryMapper;
-        this.stockMovementHistoryRespository = stockMovementHistoryRespository;
-        this.stockMovementHistoryService = stockMovementHistoryService;
-        this.productRepository = productRepository;
-        this.storeRepository = storeRepository;
-    }
 
     public List<InventoryDtoResponse> findAll() {
         List<Inventory> inventories = this.inventoryRepository.findAllByActiveTrue();
@@ -83,12 +70,27 @@ public class InventoryService {
         return this.inventoryMapper.entitiesToDtoResponse(inventories);
     }
 
+    public void processMovement(StockMovementRequest.DtoPostRequest dtoPostRequest) {
+        Inventory inventory = this.inventoryRepository.findById(dtoPostRequest.inventoryId())
+                .orElseThrow(() -> new EntityNotFoundException("Inventory not found with this ID"));
+
+        processMovement(new StockMovementRequest(
+                inventory,
+                dtoPostRequest.type(),
+                dtoPostRequest.reason(),
+                dtoPostRequest.quantity(),
+                dtoPostRequest.orderId(),
+                Instant.now(),
+                dtoPostRequest.description()
+        ));
+    }
 
     @Transactional
-    public void processMovement(InventoryMovementRequest movementRequest) {
+    public void processMovement(StockMovementRequest movementRequest) {
 
-        Inventory inventory = this.inventoryRepository.findByIdAndActiveTrue(movementRequest.inventoryID())
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
+        Inventory inventory = movementRequest.inventory();
+        if (inventory == null)
+            throw new EntityNotFoundException("Inventory not found");
 
         if (movementRequest.quantity() < 0)
             throw new RuntimeException("Quantity must be greater or equal than zero");
@@ -101,7 +103,7 @@ public class InventoryService {
         }
     }
 
-    private void increaseStock(Inventory inventory, InventoryMovementRequest movementRequest) {
+    private void increaseStock(Inventory inventory, StockMovementRequest movementRequest) {
 
         inventory.setQuantity(inventory.getQuantity() + movementRequest.quantity());
         this.inventoryRepository.save(inventory);
@@ -109,7 +111,7 @@ public class InventoryService {
     }
 
 
-    private void decreaseStock(Inventory inventory, InventoryMovementRequest movementRequest) {
+    private void decreaseStock(Inventory inventory, StockMovementRequest movementRequest) {
         if (movementRequest.quantity() > inventory.getQuantity())
             throw new RuntimeException("Insufficient stock");
 
@@ -119,7 +121,7 @@ public class InventoryService {
     }
 
 
-    private void adjustStock(Inventory inventory, InventoryMovementRequest movementRequest) {
+    private void adjustStock(Inventory inventory, StockMovementRequest movementRequest)  {
 
         inventory.setQuantity(movementRequest.quantity());
         this.inventoryRepository.save(inventory);
@@ -127,16 +129,15 @@ public class InventoryService {
     }
 
 
-    private void saveStockMovement(
-            Inventory inventory,
-            InventoryMovementRequest movementRequest
-    ) {
+    private void saveStockMovement(Inventory inventory, StockMovementRequest movementRequest) {
         StockMovementHistory stockMovementHistory = new StockMovementHistory();
         stockMovementHistory.setInventory(inventory);
         stockMovementHistory.setType(movementRequest.type());
         stockMovementHistory.setReason(movementRequest.reason());
         stockMovementHistory.setQuantity(movementRequest.quantity());
-        stockMovementHistory.setSaleId(movementRequest.saleId());
+        stockMovementHistory.setOrderId(movementRequest.orderId());
+        stockMovementHistory.setCreatedAt(movementRequest.created());
+        stockMovementHistory.setDescription(movementRequest.description());
         this.stockMovementHistoryRespository.save(stockMovementHistory);
     }
 

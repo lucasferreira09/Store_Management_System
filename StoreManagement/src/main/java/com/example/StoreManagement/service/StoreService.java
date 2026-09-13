@@ -1,8 +1,11 @@
 package com.example.StoreManagement.service;
 
 import com.example.StoreManagement.mapstruct.mappers.StoreMapper;
+import com.example.StoreManagement.model.PaginationRequest;
+import com.example.StoreManagement.model.PaginationUtils;
 import com.example.StoreManagement.model.dtoRequest.StoreDtoPostRequest;
 import com.example.StoreManagement.model.dtoRequest.StoreDtoPutRequest;
+import com.example.StoreManagement.model.PagingResult;
 import com.example.StoreManagement.model.dtoResponse.StoreDtoDetailResponse;
 import com.example.StoreManagement.model.dtoResponse.StoreDtoResponse;
 import com.example.StoreManagement.model.entity.Address;
@@ -11,27 +14,38 @@ import com.example.StoreManagement.model.repository.AddressRepository;
 import com.example.StoreManagement.model.repository.StoreRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class StoreService {
 
-    private StoreRepository storeRepository;
-    private StoreMapper storeMapper;
-    private AddressRepository addressRepository;
+    private final StoreRepository storeRepository;
+    private final StoreMapper storeMapper;
+    private final AddressRepository addressRepository;
 
-    public StoreService(StoreRepository storeRepository, StoreMapper storeMapper, AddressRepository addressRepository) {
-        this.storeRepository = storeRepository;
-        this.storeMapper = storeMapper;
-        this.addressRepository = addressRepository;
-    }
 
-    public List<StoreDtoResponse> findAll() {
-        List<Store> stores = this.storeRepository.findByActiveTrue();
+    public PagingResult<StoreDtoResponse> findAll(PaginationRequest paginationRequest) {
+        Pageable pageable = PaginationUtils.getPageable(paginationRequest);
 
-        return this.storeMapper.entitiesToDtoResponse(stores);
+        Page<Store> storesPage = this.storeRepository.findByActiveTrue(pageable);
+
+        List<StoreDtoResponse> storeDtoResponses = storesPage.stream().map(storeMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                storeDtoResponses,
+                storesPage.getTotalPages(),
+                storesPage.getTotalElements(),
+                storesPage.getSize(),
+                storesPage.getNumber(),
+                storesPage.isEmpty(),
+                storesPage.isLast()
+        );
     }
 
     public StoreDtoResponse findById(Long id) {

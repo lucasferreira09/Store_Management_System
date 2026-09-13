@@ -5,4 +5,6 @@ public enum StockMovementReason {
     RESTOCK,
     BROKEN,
     STOLEN,
+    REFUNDED,
+    ORDER_CANCELLED,
 }

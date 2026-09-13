@@ -1,4 +1,4 @@
-package com.example.StoreManagement.model;
+package com.example.StoreManagement.model.dtoRequest;
 
 import com.example.StoreManagement.model.entity.OrderItem;
 

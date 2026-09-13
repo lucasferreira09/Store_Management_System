@@ -1,6 +1,8 @@
 package com.example.StoreManagement.model.repository;
 
 import com.example.StoreManagement.model.entity.Store;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface StoreRepository extends JpaRepository<Store, Long> {
-
+    Page<Store> findByActiveTrue(Pageable pageable);
     List<Store> findByActiveTrue();
     Optional<Store> findByIdAndActiveTrue(Long id);
     Store findByCnpj(String cnpj);

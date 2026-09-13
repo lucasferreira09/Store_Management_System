@@ -8,7 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -33,20 +33,16 @@ public class StockMovementHistory {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "saleId", nullable = true)
-    private Integer saleId;
+    @Column(name = "orderId", nullable = true)
+    private String orderId;
 
-    @Column(name = "createdAt", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "createdAt", columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = false)
+    private Instant createdAt;
+
+    @Column(name = "description")
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "inventoryId", referencedColumnName = "id", nullable = false)
     private Inventory inventory;
-
-
-
-    @PrePersist
-    private void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 }

@@ -17,7 +17,6 @@ import java.math.BigDecimal;
                 @UniqueConstraint(
                         name = "unique_order_product", columnNames = {"order_id", "product_id"}
                 )})
-
  */
 @Table(name = "orderItem")
 public class OrderItem {

@@ -5,21 +5,20 @@ import com.example.StoreManagement.model.dtoResponse.CustomerDtoDetailResponse;
 import com.example.StoreManagement.model.dtoResponse.CustomerDtoResponse;
 import com.example.StoreManagement.service.CustomerService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/customers")
 public class CustomerController {
 
-    private CustomerService customerService;
+    private final CustomerService customerService;
 
-    public CustomerController(CustomerService customerService) {
-        this.customerService = customerService;
-    }
 
     @GetMapping
     public ResponseEntity<List<CustomerDtoResponse>> getAll() {

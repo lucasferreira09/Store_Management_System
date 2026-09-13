@@ -3,7 +3,6 @@ package com.example.StoreManagement.model.dtoRequest;
 import jakarta.validation.constraints.NotBlank;
 
 public record CustomerDtoPostRequest(
-
         @NotBlank(message = "Name must not be empty")
         String name,
 
