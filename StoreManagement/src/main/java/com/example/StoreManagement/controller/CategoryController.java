@@ -1,10 +1,14 @@
 package com.example.StoreManagement.controller;
 
-import com.example.StoreManagement.model.dtoRequest.CategoryDtoPostRequest;
-import com.example.StoreManagement.model.dtoResponse.CategoryDtoResponse;
+import com.example.StoreManagement.dtos.dtoRequest.CategoryPutRequest;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.CategoryDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoResponse.CategoryDtoResponse;
 import com.example.StoreManagement.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +24,16 @@ public class CategoryController {
 
 
     @GetMapping
-    public ResponseEntity<List<CategoryDtoResponse>> getAll() {
+    public ResponseEntity<PagingResult<CategoryDtoResponse>> getAll(
+            @RequestParam(defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(defaultValue = "10", required = false) Integer size,
+            @RequestParam(defaultValue = "id", required = false) String sortField,
+            @RequestParam(defaultValue = "ASC", required = false) Sort.Direction direction
+    ) {
+        PaginationRequest request = new PaginationRequest(pageNumber, size, sortField, direction);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.categoryService.findAll());
+                .body(this.categoryService.findAll(request));
     }
 
     @GetMapping("/id/{id}")
@@ -49,11 +59,11 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDtoResponse> update(
-            @PathVariable Long id, @RequestBody @Valid CategoryDtoPostRequest categoryDtoPostRequest
+            @PathVariable Long id, @RequestBody @Valid CategoryPutRequest putRequest
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.categoryService.update(id, categoryDtoPostRequest));
+                .body(this.categoryService.update(id, putRequest));
     }
 
     @DeleteMapping("{id}")

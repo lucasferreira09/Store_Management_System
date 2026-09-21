@@ -55,7 +55,7 @@ create table customer_address (
 create table store (
    id serial primary key,
    name varchar(100) not null,
-   cnpj varchar(13) unique not null constraint check_length_cnpj check (length(cnpj)=13),
+   cnpj varchar(14) unique not null constraint check_length_cnpj check (length(cnpj)=14),
    phone_number varchar(20) not null,
    email varchar(100) unique not null,
    address_id INTEGER null,

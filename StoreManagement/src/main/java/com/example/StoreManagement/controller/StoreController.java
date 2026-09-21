@@ -1,11 +1,11 @@
 package com.example.StoreManagement.controller;
 
-import com.example.StoreManagement.model.PaginationRequest;
-import com.example.StoreManagement.model.PagingResult;
-import com.example.StoreManagement.model.dtoRequest.StoreDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.StoreDtoPutRequest;
-import com.example.StoreManagement.model.dtoResponse.StoreDtoDetailResponse;
-import com.example.StoreManagement.model.dtoResponse.StoreDtoResponse;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.StoreDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoRequest.StoreDtoPutRequest;
+import com.example.StoreManagement.dtos.dtoResponse.StoreDtoDetailResponse;
+import com.example.StoreManagement.dtos.dtoResponse.StoreDtoResponse;
 import com.example.StoreManagement.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,6 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
-
 
     @GetMapping()
     public ResponseEntity<PagingResult<StoreDtoResponse>> getAll(
@@ -84,20 +83,20 @@ public class StoreController {
                 .body(this.storeService.update(id, dtoPutRequest));
     }
 
-    @PutMapping("/storeId/{storeId}/cnpj/{cnpj}")
-    public ResponseEntity<StoreDtoDetailResponse> update(@PathVariable Long storeId, @PathVariable String cnpj) {
+    @PutMapping("/storeId/{storeId}/cnpj")
+    public ResponseEntity<StoreDtoDetailResponse> update(@PathVariable Long storeId, @RequestBody @Valid StoreDtoPutRequest.Cnpj putRequest) {
 
         return ResponseEntity.
                 status(HttpStatus.OK)
-                .body(this.storeService.update(storeId, cnpj));
+                .body(this.storeService.updateCnpj(storeId, putRequest));
     }
 
-    @PutMapping("/storeId/{storeId}/address/{addressId}")
-    public ResponseEntity<StoreDtoResponse> update(@PathVariable Long storeId, @PathVariable Long addressId) {
+    @PutMapping("/storeId/{storeId}/address")
+    public ResponseEntity<StoreDtoResponse> update(@PathVariable Long storeId,  @RequestBody @Valid StoreDtoPutRequest.Adress putRequest) {
 
         return ResponseEntity.
                 status(HttpStatus.OK)
-                .body(this.storeService.update(storeId, addressId));
+                .body(this.storeService.updateAddress(storeId, putRequest));
     }
 
     @DeleteMapping("/id/{id}")

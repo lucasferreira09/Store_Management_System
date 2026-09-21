@@ -1,23 +1,29 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.dtos.dtoResponse.*;
 import com.example.StoreManagement.mapstruct.mappers.PaymentMapper;
-import com.example.StoreManagement.model.dtoRequest.PaymentCompletedData;
-import com.example.StoreManagement.model.dtoRequest.PaymentCreation;
-import com.example.StoreManagement.model.dtoRequest.PaymentCreationRequest;
-import com.example.StoreManagement.model.dtoRequest.CheckoutCreationRequest;
-import com.example.StoreManagement.model.dtoResponse.*;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PaginationUtils;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.PaymentCompletedData;
+import com.example.StoreManagement.dtos.dtoRequest.PaymentCreation;
+import com.example.StoreManagement.dtos.dtoRequest.PaymentCreationRequest;
+import com.example.StoreManagement.dtos.dtoRequest.CheckoutCreationRequest;
 import com.example.StoreManagement.model.entity.Payment;
 import com.example.StoreManagement.model.entity.Transaction;
-import com.example.StoreManagement.model.entity.enums.OrderStatus;
-import com.example.StoreManagement.model.entity.enums.PaymentStatus;
-import com.example.StoreManagement.model.repository.PaymentRepository;
-import com.example.StoreManagement.model.repository.TransactionRepository;
+import com.example.StoreManagement.enums.OrderStatus;
+import com.example.StoreManagement.enums.PaymentStatus;
+import com.example.StoreManagement.repository.PaymentRepository;
+import com.example.StoreManagement.repository.TransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +37,24 @@ public class PaymentService {
     private final TransactionRepository transactionRepository;
     private final PaymentMapper paymentMapper;
 
+
+    public PagingResult<PaymentDtoReponse> findAll(PaginationRequest request) {
+
+        Pageable pageable = PaginationUtils.getPageable(request);
+
+        Page<Payment> paymentsPage = this.paymentRepository.findAll(pageable);
+        List<PaymentDtoReponse> paymentDtoReponseList = paymentsPage.stream().map(paymentMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                paymentDtoReponseList,
+                paymentsPage.getTotalPages(),
+                paymentsPage.getTotalElements(),
+                paymentsPage.getSize(),
+                paymentsPage.getNumber(),
+                paymentsPage.isEmpty(),
+                paymentsPage.isLast()
+        );
+    }
 
     private void updatePayment(PaymentCreation paymentCreation) {
         Optional<Payment> payment = this.paymentRepository.findByCheckoutId(paymentCreation.checkoutId());

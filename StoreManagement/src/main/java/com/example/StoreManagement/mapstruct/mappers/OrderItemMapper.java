@@ -1,7 +1,7 @@
 package com.example.StoreManagement.mapstruct.mappers;
 
-import com.example.StoreManagement.model.dtoRequest.OrderItemDtoPostRequest;
-import com.example.StoreManagement.model.dtoResponse.OrderItemDtoResponse;
+import com.example.StoreManagement.dtos.dtoRequest.OrderItemDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoResponse.OrderItemDtoResponse;
 import com.example.StoreManagement.model.entity.OrderItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

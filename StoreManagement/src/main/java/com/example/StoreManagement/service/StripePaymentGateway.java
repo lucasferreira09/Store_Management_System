@@ -1,10 +1,10 @@
 package com.example.StoreManagement.service;
 
-import com.example.StoreManagement.model.dtoRequest.CheckoutCreationRequest;
-import com.example.StoreManagement.model.dtoResponse.ProviderCheckoutResponse;
-import com.example.StoreManagement.model.entity.enums.PaymentMethodType;
-import com.example.StoreManagement.model.entity.enums.PaymentProvider;
-import com.example.StoreManagement.model.repository.OrderRepository;
+import com.example.StoreManagement.dtos.dtoRequest.CheckoutCreationRequest;
+import com.example.StoreManagement.dtos.dtoResponse.ProviderCheckoutResponse;
+import com.example.StoreManagement.enums.PaymentMethodType;
+import com.example.StoreManagement.enums.PaymentProvider;
+import com.example.StoreManagement.repository.OrderRepository;
 import com.stripe.exception.StripeException;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.model.checkout.Session;

@@ -1,6 +1,6 @@
 package com.example.StoreManagement.mapstruct.mappers;
 
-import com.example.StoreManagement.model.dtoResponse.StockMovementHistoryDtoResponse;
+import com.example.StoreManagement.dtos.dtoResponse.StockMovementHistoryDtoResponse;
 import com.example.StoreManagement.model.entity.StockMovementHistory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

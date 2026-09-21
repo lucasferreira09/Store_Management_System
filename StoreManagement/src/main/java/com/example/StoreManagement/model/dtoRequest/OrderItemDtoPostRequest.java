@@ -1,8 +1,0 @@
-package com.example.StoreManagement.model.dtoRequest;
-
-
-public record OrderItemDtoPostRequest(
-        Long productId,
-        Long storeId,
-        Integer quantity
-) {}

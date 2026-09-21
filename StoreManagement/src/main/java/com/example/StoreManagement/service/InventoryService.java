@@ -1,20 +1,25 @@
 package com.example.StoreManagement.service;
 
 import com.example.StoreManagement.mapstruct.mappers.InventoryMapper;
-import com.example.StoreManagement.model.dtoRequest.InventoryDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.StockMovementRequest;
-import com.example.StoreManagement.model.dtoResponse.InventoryDtoResponse;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PaginationUtils;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.InventoryDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoRequest.StockMovementRequest;
+import com.example.StoreManagement.dtos.dtoResponse.InventoryDtoResponse;
 import com.example.StoreManagement.model.entity.Inventory;
 import com.example.StoreManagement.model.entity.Product;
 import com.example.StoreManagement.model.entity.StockMovementHistory;
 import com.example.StoreManagement.model.entity.Store;
-import com.example.StoreManagement.model.repository.InventoryRepository;
-import com.example.StoreManagement.model.repository.ProductRepository;
-import com.example.StoreManagement.model.repository.StockMovementHistoryRespository;
-import com.example.StoreManagement.model.repository.StoreRepository;
+import com.example.StoreManagement.repository.InventoryRepository;
+import com.example.StoreManagement.repository.ProductRepository;
+import com.example.StoreManagement.repository.StockMovementHistoryRespository;
+import com.example.StoreManagement.repository.StoreRepository;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -32,10 +37,21 @@ public class InventoryService {
     private final StoreRepository storeRepository;
 
 
-    public List<InventoryDtoResponse> findAll() {
-        List<Inventory> inventories = this.inventoryRepository.findAllByActiveTrue();
+    public PagingResult<InventoryDtoResponse> findAll(PaginationRequest request) {
+        Pageable pageable = PaginationUtils.getPageable(request);
 
-        return this.inventoryMapper.entitiesToDtoResponse(inventories);
+        Page<Inventory> inventoriesPage = this.inventoryRepository.findAllByActiveTrue(pageable);
+        List<InventoryDtoResponse> inventoriesDtoList = inventoriesPage.stream().map(inventoryMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                inventoriesDtoList,
+                inventoriesPage.getTotalPages(),
+                inventoriesPage.getTotalElements(),
+                inventoriesPage.getSize(),
+                inventoriesPage.getSize(),
+                inventoriesPage.isEmpty(),
+                inventoriesPage.isLast()
+        );
     }
 
     public InventoryDtoResponse create(InventoryDtoPostRequest dtoPostRequest) {
@@ -64,10 +80,21 @@ public class InventoryService {
     }
 
 
-    public List<InventoryDtoResponse> findByStoreId(Long id) {
-        List<Inventory> inventories = this.inventoryRepository.findValidInventoriesByStoreId(id);
+    public PagingResult<InventoryDtoResponse> findByStoreId(Long id, PaginationRequest request) {
+        Pageable pageable = PaginationUtils.getPageable(request);
+        Page<Inventory> inventoriesPage = this.inventoryRepository.findValidInventoriesByStoreId(id, pageable);
 
-        return this.inventoryMapper.entitiesToDtoResponse(inventories);
+        List<InventoryDtoResponse> inventoriesDtoList = inventoriesPage.stream().map(inventoryMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                inventoriesDtoList,
+                inventoriesPage.getTotalPages(),
+                inventoriesPage.getTotalElements(),
+                inventoriesPage.getSize(),
+                inventoriesPage.getSize(),
+                inventoriesPage.isEmpty(),
+                inventoriesPage.isLast()
+        );
     }
 
     public void processMovement(StockMovementRequest.DtoPostRequest dtoPostRequest) {
