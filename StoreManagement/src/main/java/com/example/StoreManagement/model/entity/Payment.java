@@ -1,9 +1,9 @@
 package com.example.StoreManagement.model.entity;
 
 
-import com.example.StoreManagement.model.entity.enums.PaymentMethodType;
-import com.example.StoreManagement.model.entity.enums.PaymentProvider;
-import com.example.StoreManagement.model.entity.enums.PaymentStatus;
+import com.example.StoreManagement.enums.PaymentMethodType;
+import com.example.StoreManagement.enums.PaymentProvider;
+import com.example.StoreManagement.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

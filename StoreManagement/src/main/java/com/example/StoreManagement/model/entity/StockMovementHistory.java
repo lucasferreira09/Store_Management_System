@@ -1,7 +1,7 @@
 package com.example.StoreManagement.model.entity;
 
-import com.example.StoreManagement.model.entity.enums.StockMovementType;
-import com.example.StoreManagement.model.entity.enums.StockMovementReason;
+import com.example.StoreManagement.enums.StockMovementType;
+import com.example.StoreManagement.enums.StockMovementReason;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

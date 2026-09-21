@@ -1,10 +1,10 @@
 package com.example.StoreManagement.controller;
 
-import com.example.StoreManagement.model.PaginationRequest;
-import com.example.StoreManagement.model.PagingResult;
-import com.example.StoreManagement.model.dtoRequest.AddressDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.AddressDtoPutRequest;
-import com.example.StoreManagement.model.dtoResponse.AddressDtoResponse;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.AddressDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoRequest.AddressDtoPutRequest;
+import com.example.StoreManagement.dtos.dtoResponse.AddressDtoResponse;
 import com.example.StoreManagement.service.AddressService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

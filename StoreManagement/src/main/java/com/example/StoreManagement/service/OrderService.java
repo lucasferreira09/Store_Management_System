@@ -1,17 +1,19 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.dtos.dtoRequest.*;
 import com.example.StoreManagement.mapstruct.mappers.OrderItemMapper;
 import com.example.StoreManagement.mapstruct.mappers.OrderMapper;
-import com.example.StoreManagement.model.*;
-import com.example.StoreManagement.model.dtoRequest.*;
-import com.example.StoreManagement.model.dtoResponse.OrderCreationResponse;
-import com.example.StoreManagement.model.dtoResponse.OrderDetailsDtoResponse;
-import com.example.StoreManagement.model.dtoResponse.OrderDtoResponse;
+import com.example.StoreManagement.dtos.dtoResponse.OrderCreationResponse;
+import com.example.StoreManagement.dtos.dtoResponse.OrderDetailsDtoResponse;
+import com.example.StoreManagement.dtos.dtoResponse.OrderDtoResponse;
 import com.example.StoreManagement.model.entity.*;
-import com.example.StoreManagement.model.entity.enums.OrderStatus;
-import com.example.StoreManagement.model.entity.enums.StockMovementReason;
-import com.example.StoreManagement.model.entity.enums.StockMovementType;
-import com.example.StoreManagement.model.repository.*;
+import com.example.StoreManagement.enums.OrderStatus;
+import com.example.StoreManagement.enums.StockMovementReason;
+import com.example.StoreManagement.enums.StockMovementType;
+import com.example.StoreManagement.repository.*;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PaginationUtils;
+import com.example.StoreManagement.utils.PagingResult;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -71,7 +73,6 @@ public class OrderService {
             throw new EntityNotFoundException("Orders not found for this checkoutId");
         }
 
-
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<Long> orderIds = new ArrayList<>();
         for  (Order order : orders) {
@@ -89,18 +90,27 @@ public class OrderService {
         return orderCreationResponse;
     }
 
-    public List<OrderDtoResponse> findByCheckoutId(UUID checkoutId) {
-        List<Order> orders = orderRepository.findByCheckoutId(checkoutId);
+    public PagingResult<OrderDtoResponse> findByCheckoutId(UUID checkoutId, PaginationRequest request) {
+        Pageable pageable = PaginationUtils.getPageable(request);
+        Page<Order> ordersPage = orderRepository.findByCheckoutId(checkoutId, pageable);
 
-        return orderMapper.entitiesToDtoResponse(orders);
+        List<OrderDtoResponse> ordersDtoResponse = ordersPage.stream().map(orderMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                ordersDtoResponse,
+                ordersPage.getTotalPages(),
+                ordersPage.getTotalElements(),
+                ordersPage.getSize(),
+                ordersPage.getNumber(),
+                ordersPage.isEmpty(),
+                ordersPage.isLast()
+        );
+
     }
 
     public PagingResult<OrderDtoResponse> findByCustomerId(Long id, PaginationRequest request) {
-        Customer customer = customerRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID"));
-
-
         Pageable pageable = PaginationUtils.getPageable(request);
+
         Page<Order> customerOrdersPage = this.orderRepository.findByCustomerId(id, pageable);
         List<OrderDtoResponse> ordersDtoResponse = customerOrdersPage.stream().map(orderMapper::entityToDtoResponse).toList();
 

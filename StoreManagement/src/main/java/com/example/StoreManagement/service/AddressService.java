@@ -2,17 +2,18 @@ package com.example.StoreManagement.service;
 
 import java.util.List;
 import com.example.StoreManagement.mapstruct.mappers.AddressMapper;
-import com.example.StoreManagement.model.PaginationRequest;
-import com.example.StoreManagement.model.PaginationUtils;
-import com.example.StoreManagement.model.PagingResult;
-import com.example.StoreManagement.model.dtoRequest.AddressDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.AddressDtoPutRequest;
-import com.example.StoreManagement.model.dtoResponse.AddressDtoResponse;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PaginationUtils;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.AddressDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoRequest.AddressDtoPutRequest;
+import com.example.StoreManagement.dtos.dtoResponse.AddressDtoResponse;
 import com.example.StoreManagement.model.entity.Address;
-import com.example.StoreManagement.model.repository.AddressRepository;
-import com.example.StoreManagement.model.repository.CustomerAddressRepository;
-import com.example.StoreManagement.model.repository.StoreRepository;
+import com.example.StoreManagement.repository.AddressRepository;
+import com.example.StoreManagement.repository.CustomerAddressRepository;
+import com.example.StoreManagement.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,6 +54,7 @@ public class AddressService {
         return this.addressMapper.entityToDtoResponse(address);
     }
 
+    @Transactional
     public AddressDtoResponse create(AddressDtoPostRequest addressDtoPostRequest) {
         Address address = this.addressMapper.dtoPostRequestToEntity(addressDtoPostRequest);
         this.addressRepository.save(address);
@@ -60,17 +62,18 @@ public class AddressService {
         return this.addressMapper.entityToDtoResponse(address);
     }
 
+    @Transactional
     public AddressDtoResponse update(Long id, AddressDtoPutRequest dtoPutRequest) {
         Address address = this.addressRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Address not found with this id!"));
 
-        Address updatedAddress = this.addressMapper.dtoPutRequestToEntity(dtoPutRequest);
-        updatedAddress.setId(address.getId());
-        this.addressRepository.save(updatedAddress);
+        addressMapper.updateEntity(dtoPutRequest, address);
+        addressRepository.save(address);
 
-        return this.addressMapper.entityToDtoResponse(updatedAddress);
+        return this.addressMapper.entityToDtoResponse(address);
     }
 
+    @Transactional
     public void delete(Long id) {
         Address address = this.addressRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Address not found with this id"));

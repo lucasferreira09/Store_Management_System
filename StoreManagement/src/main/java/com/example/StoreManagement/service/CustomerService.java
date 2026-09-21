@@ -1,17 +1,24 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.dtos.dtoRequest.CustomerDtoPutRequest;
 import com.example.StoreManagement.mapstruct.mappers.AddressMapper;
 import com.example.StoreManagement.mapstruct.mappers.CustomerMapper;
-import com.example.StoreManagement.model.dtoRequest.CustomerDtoPostRequest;
-import com.example.StoreManagement.model.dtoResponse.CustomerDtoDetailResponse;
-import com.example.StoreManagement.model.dtoResponse.CustomerDtoResponse;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PaginationUtils;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.CustomerDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoResponse.CustomerDtoDetailResponse;
+import com.example.StoreManagement.dtos.dtoResponse.CustomerDtoResponse;
 import com.example.StoreManagement.model.entity.Customer;
-import com.example.StoreManagement.model.repository.AddressRepository;
-import com.example.StoreManagement.model.repository.CustomerRepository;
+import com.example.StoreManagement.repository.AddressRepository;
+import com.example.StoreManagement.repository.CustomerRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,10 +32,21 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
 
 
-    public List<CustomerDtoResponse> findAll() {
-        List<Customer> customer = this.customerRepository.findByActiveTrue();
+    public PagingResult<CustomerDtoResponse> findAll(PaginationRequest request) {
+        Pageable pageable = PaginationUtils.getPageable(request);
 
-        return this.customerMapper.entitiesToDtoResponse(customer);
+        Page<Customer> customersPage = this.customerRepository.findByActiveTrue(pageable);
+        List<CustomerDtoResponse> customerDtoList = customersPage.stream().map(customerMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                customerDtoList,
+                customersPage.getTotalPages(),
+                customersPage.getTotalElements(),
+                customersPage.getSize(),
+                customersPage.getSize(),
+                customersPage.isEmpty(),
+                customersPage.isLast()
+        );
     }
 
     public CustomerDtoResponse findById(Long id) {
@@ -38,10 +56,21 @@ public class CustomerService {
         return this.customerMapper.entityToDtoResponse(customer);
     }
 
-    public List<CustomerDtoResponse> findByName(String name) {
-        List<Customer> customers = this.customerRepository.findByNameAndActiveTrue(name);
+    public PagingResult<CustomerDtoResponse> findByName(String name, PaginationRequest request) {
+        Pageable pageable = PaginationUtils.getPageable(request);
 
-        return this.customerMapper.entitiesToDtoResponse(customers);
+        Page<Customer> customersPage = this.customerRepository.findByNameAndActiveTrue(name, pageable);
+        List<CustomerDtoResponse> customerDtoList = customersPage.stream().map(customerMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                customerDtoList,
+                customersPage.getTotalPages(),
+                customersPage.getTotalElements(),
+                customersPage.getSize(),
+                customersPage.getSize(),
+                customersPage.isEmpty(),
+                customersPage.isLast()
+        );
     }
 
     public CustomerDtoResponse findByCpf(String cpf) {
@@ -52,6 +81,7 @@ public class CustomerService {
     }
 
 
+    @Transactional
     public CustomerDtoDetailResponse create(CustomerDtoPostRequest dtoPostRequest) {
         Customer existingByCpf = this.customerRepository.findByCpf(dtoPostRequest.cpf());
 
@@ -70,22 +100,22 @@ public class CustomerService {
         return this.customerMapper.entityToDtoDetailResponse(newCustomer);
     }
 
-    public CustomerDtoDetailResponse update(Long id, CustomerDtoPostRequest dtoPostRequest) {
+    @Transactional
+    public CustomerDtoDetailResponse update(Long id, CustomerDtoPutRequest putRequest) {
         Customer customer = customerRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID"));
 
-        Customer existingByCpf = this.customerRepository.findByCpf(dtoPostRequest.cpf());
+        Customer existingByCpf = this.customerRepository.findByCpf(putRequest.cpf());
         if (existingByCpf != null && !existingByCpf.getId().equals(customer.getId()))
            throw new EntityExistsException("This CPF already belongs to another Customer");
 
+        this.checkEmailAvailability(customer, putRequest.email());
 
-        this.checkEmailAvailability(customer, dtoPostRequest.email());
-        Customer updatedCustomer = this.customerMapper.dtoPostRequestToEntity(dtoPostRequest);
-        updatedCustomer.setId(customer.getId());
-        this.customerRepository.save(updatedCustomer);
-        return this.customerMapper.entityToDtoDetailResponse(updatedCustomer);
+        customerMapper.updateEntity(putRequest, customer);
+        return this.customerMapper.entityToDtoDetailResponse(customer);
     }
 
+    @Transactional
     public void delete(Long id) {
         Customer customer = this.customerRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID"));
@@ -99,12 +129,12 @@ public class CustomerService {
         customer.setCpf(dtoPostRequest.cpf());
         customer.setPhoneNumber(dtoPostRequest.phoneNumber());
         customer.setEmail(dtoPostRequest.email());
+
         return this.customerRepository.save(customer);
     }
 
     private void checkEmailAvailability(Customer customer, String email) {
         Customer existingByEmail = this.customerRepository.findByEmail(email);
-
 
         if (existingByEmail != null &&
                 (customer != null || !existingByEmail.getId().equals(customer.getId()))

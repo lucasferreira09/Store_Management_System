@@ -1,11 +1,13 @@
 package com.example.StoreManagement.mapstruct.mappers;
 
-import com.example.StoreManagement.model.dtoRequest.CustomerAddressDtoPostRequest;
-import com.example.StoreManagement.model.dtoResponse.CustomerAddressDetailsResponse;
-import com.example.StoreManagement.model.dtoResponse.CustomerAddressResponse;
+import com.example.StoreManagement.dtos.dtoRequest.CustomerAddressDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoRequest.CustomerAddressPutRequest;
+import com.example.StoreManagement.dtos.dtoResponse.CustomerAddressDetailsResponse;
+import com.example.StoreManagement.dtos.dtoResponse.CustomerAddressResponse;
 import com.example.StoreManagement.model.entity.CustomerAddress;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
@@ -24,4 +26,6 @@ public interface CustomerAddressMapper {
     
     @Mapping(source = "customer.name", target = "name")
     List<CustomerAddressDetailsResponse> entitiesToDetailsResponse(List<CustomerAddress> customerAddresses);
+
+    void updateEntity(CustomerAddressPutRequest putRequest, @MappingTarget CustomerAddress customerAddress);
 }

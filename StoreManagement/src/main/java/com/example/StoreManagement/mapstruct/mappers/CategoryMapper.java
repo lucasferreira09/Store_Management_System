@@ -1,9 +1,11 @@
 package com.example.StoreManagement.mapstruct.mappers;
 
-import com.example.StoreManagement.model.dtoRequest.CategoryDtoPostRequest;
-import com.example.StoreManagement.model.dtoResponse.CategoryDtoResponse;
+import com.example.StoreManagement.dtos.dtoRequest.CategoryDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoRequest.CategoryPutRequest;
+import com.example.StoreManagement.dtos.dtoResponse.CategoryDtoResponse;
 import com.example.StoreManagement.model.entity.Category;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
@@ -14,4 +16,5 @@ public interface CategoryMapper {
 
     List<CategoryDtoResponse> entitiesToAllDtoResponse(List<Category> categories);
 
+    void updateEntity(CategoryPutRequest putRequest, @MappingTarget Category category);
 }

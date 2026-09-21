@@ -1,12 +1,15 @@
 package com.example.StoreManagement.controller;
 
-import com.example.StoreManagement.model.dtoRequest.CustomerAddressDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.CustomerAddressPutRequest;
-import com.example.StoreManagement.model.dtoResponse.CustomerAddressDetailsResponse;
-import com.example.StoreManagement.model.dtoResponse.CustomerAddressResponse;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.CustomerAddressDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoRequest.CustomerAddressPutRequest;
+import com.example.StoreManagement.dtos.dtoResponse.CustomerAddressDetailsResponse;
+import com.example.StoreManagement.dtos.dtoResponse.CustomerAddressResponse;
 import com.example.StoreManagement.service.CustomerAddressService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +24,16 @@ public class CustomerAddressController {
     private final CustomerAddressService customerAddressService;
 
     @GetMapping
-    public ResponseEntity<List<CustomerAddressResponse>> getAll() {
+    public ResponseEntity<PagingResult<CustomerAddressResponse>> getAll(
+            @RequestParam(defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(defaultValue = "10", required = false) Integer size,
+            @RequestParam(defaultValue = "id", required = false) String sortField,
+            @RequestParam(defaultValue = "ASC", required = false) Sort.Direction sortDirection
+    ) {
+        PaginationRequest request = new PaginationRequest(pageNumber, size, sortField, sortDirection);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.customerAddressService.findAll());
+                .body(this.customerAddressService.findAll(request));
     }
 
     @GetMapping("/customerId/{id}/addresses")

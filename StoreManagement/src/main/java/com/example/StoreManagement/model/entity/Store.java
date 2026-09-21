@@ -19,7 +19,7 @@ public class Store {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "cnpj", nullable = false, unique = true)
+    @Column(name = "cnpj", length = 14, nullable = false, unique = true)
     private String cnpj;
 
     @Column(name = "phoneNumber", nullable = false)

@@ -1,6 +1,6 @@
 package com.example.StoreManagement.service;
 
-import com.example.StoreManagement.model.entity.enums.PaymentProvider;
+import com.example.StoreManagement.enums.PaymentProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

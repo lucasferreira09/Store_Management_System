@@ -1,8 +1,8 @@
 package com.example.StoreManagement.service;
 
-import com.example.StoreManagement.model.dtoRequest.PaymentCompletedData;
-import com.example.StoreManagement.model.entity.enums.PaymentMethodType;
-import com.example.StoreManagement.model.entity.enums.PaymentProvider;
+import com.example.StoreManagement.dtos.dtoRequest.PaymentCompletedData;
+import com.example.StoreManagement.enums.PaymentMethodType;
+import com.example.StoreManagement.enums.PaymentProvider;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;

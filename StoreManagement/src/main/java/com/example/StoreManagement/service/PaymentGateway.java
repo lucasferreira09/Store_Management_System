@@ -1,8 +1,8 @@
 package com.example.StoreManagement.service;
 
-import com.example.StoreManagement.model.dtoRequest.CheckoutCreationRequest;
-import com.example.StoreManagement.model.dtoResponse.ProviderCheckoutResponse;
-import com.example.StoreManagement.model.entity.enums.PaymentProvider;
+import com.example.StoreManagement.dtos.dtoRequest.CheckoutCreationRequest;
+import com.example.StoreManagement.dtos.dtoResponse.ProviderCheckoutResponse;
+import com.example.StoreManagement.enums.PaymentProvider;
 
 public interface PaymentGateway {
 

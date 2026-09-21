@@ -1,10 +1,10 @@
 package com.example.StoreManagement.service;
-import com.example.StoreManagement.model.dtoRequest.CheckoutCreationRequest;
-import com.example.StoreManagement.model.dtoRequest.PagBankCheckoutRequest;
-import com.example.StoreManagement.model.dtoResponse.PagBankCheckoutResponse;
-import com.example.StoreManagement.model.dtoResponse.ProviderCheckoutResponse;
-import com.example.StoreManagement.model.entity.enums.PaymentMethodType;
-import com.example.StoreManagement.model.entity.enums.PaymentProvider;
+import com.example.StoreManagement.dtos.dtoRequest.CheckoutCreationRequest;
+import com.example.StoreManagement.dtos.dtoRequest.PagBankCheckoutRequest;
+import com.example.StoreManagement.dtos.dtoResponse.PagBankCheckoutResponse;
+import com.example.StoreManagement.dtos.dtoResponse.ProviderCheckoutResponse;
+import com.example.StoreManagement.enums.PaymentMethodType;
+import com.example.StoreManagement.enums.PaymentProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;

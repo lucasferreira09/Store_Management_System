@@ -1,17 +1,20 @@
 package com.example.StoreManagement.service;
 
-import com.example.StoreManagement.mapstruct.mappers.CategoryMapper;
+import com.example.StoreManagement.dtos.dtoRequest.ProductDtoPutRequest;
 import com.example.StoreManagement.mapstruct.mappers.ProductMapper;
-import com.example.StoreManagement.model.PaginationUtils;
-import com.example.StoreManagement.model.dtoRequest.ProductDtoPostRequest;
-import com.example.StoreManagement.model.dtoResponse.ProductDtoResponse;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PaginationUtils;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.ProductDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoResponse.ProductDtoResponse;
 import com.example.StoreManagement.model.entity.Category;
 import com.example.StoreManagement.model.entity.Product;
-import com.example.StoreManagement.model.repository.CategoryRepository;
-import com.example.StoreManagement.model.repository.ProductRepository;
+import com.example.StoreManagement.repository.CategoryRepository;
+import com.example.StoreManagement.repository.ProductRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +28,21 @@ public class ProductService {
     private final ProductMapper productMapper;
 
 
-    public List<ProductDtoResponse> findAll() {
+    public PagingResult<ProductDtoResponse> findAll(PaginationRequest request) {
+        Pageable pageable = PaginationUtils.getPageable(request);
 
-        List<Product> products = this.productRepository.findByActiveTrueAndCategoryActiveTrue();
-        return this.productMapper.entitiesToAllDtoResponse(products);
+        Page<Product> productsPage = productRepository.findByActiveTrueAndCategoryActiveTrue(pageable);
+        List<ProductDtoResponse> productDtoList = productsPage.stream().map(productMapper::entityToDtoResponse).toList();
+
+        return new PagingResult<>(
+                productDtoList,
+                productsPage.getTotalPages(),
+                productsPage.getTotalElements(),
+                productsPage.getSize(),
+                productsPage.getNumber(),
+                productsPage.isEmpty(),
+                productsPage.isLast()
+        );
     }
 
     public ProductDtoResponse findById(Long id) {
@@ -69,7 +83,8 @@ public class ProductService {
             if (existingByBarcode.isActive())
                 throw new EntityExistsException("This product already exists");
 
-            return this.productMapper.entityToDtoResponse(this.reactivateProduct(existingByBarcode, dtoPost));
+            Product reactivatedProduct = this.reactivateProduct(existingByBarcode, dtoPost);
+            return this.productMapper.entityToDtoResponse(reactivatedProduct);
         }
 
         Product product = this.productMapper.dtoPostRequestToEntity(dtoPost);
@@ -78,32 +93,31 @@ public class ProductService {
         return this.productMapper.entityToDtoResponse(savedProduct);
     }
 
-    public ProductDtoResponse update(Long id, ProductDtoPostRequest dtoPostRequest) {
+    public ProductDtoResponse update(Long id, ProductDtoPutRequest putRequest) {
         Product product = this.productRepository.findByIdAndActiveTrueAndCategoryActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with this id"));
 
-        Category category = this.categoryRepository.findByIdAndActiveTrue(dtoPostRequest.categoryID())
+        Category category = this.categoryRepository.findByIdAndActiveTrue(putRequest.categoryID())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID."));
 
-
-        Product existingByBarcode = this.productRepository.findByBarcode(dtoPostRequest.barcode());
+        Product existingByBarcode = this.productRepository.findByBarcode(putRequest.barcode());
         if (existingByBarcode != null && !existingByBarcode.getId().equals(product.getId()))
             throw new EntityExistsException("This barcode already belongs to another Product");
 
 
-        Product updatedProduct = this.productMapper.dtoPostRequestToEntity(dtoPostRequest);
-        updatedProduct.setId(id);
-        updatedProduct.setCategory(category);
-        productRepository.save(updatedProduct);
-        return this.productMapper.entityToDtoResponse(updatedProduct);
+        productMapper.updateEntity(putRequest, product);
+        product.setCategory(category);
+        productRepository.save(product);
+
+        return this.productMapper.entityToDtoResponse(product);
     }
 
-    public ProductDtoResponse update(Long productId, Long categoryId) {
-        Product product = this.productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with this ID"));
+    public ProductDtoResponse updateCategory(Long productId, Long categoryId) {
+        Product product = this.productRepository.findByIdAndActiveTrueAndCategoryActiveTrue(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with this id"));
 
-        Category category = this.categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID"));
+        Category category = this.categoryRepository.findByIdAndActiveTrue(categoryId)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID."));
 
         product.setCategory(category);
         productRepository.save(product);
@@ -129,6 +143,7 @@ public class ProductService {
         product.setSalePrice(dtoPostRequest.salePrice());
         product.setCostPrice(dtoPostRequest.costPrice());
         product.setCategory(category);
+
         return this.productRepository.save(product);
     }
 }

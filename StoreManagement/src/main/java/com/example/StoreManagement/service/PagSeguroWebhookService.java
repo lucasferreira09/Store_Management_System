@@ -1,9 +1,9 @@
 package com.example.StoreManagement.service;
 
-import com.example.StoreManagement.model.dtoRequest.PaymentCompletedData;
-import com.example.StoreManagement.model.dtoResponse.PagBankPaymentWebhook;
-import com.example.StoreManagement.model.entity.enums.PaymentMethodType;
-import com.example.StoreManagement.model.entity.enums.PaymentProvider;
+import com.example.StoreManagement.dtos.dtoRequest.PaymentCompletedData;
+import com.example.StoreManagement.dtos.dtoResponse.PagBankPaymentWebhook;
+import com.example.StoreManagement.enums.PaymentMethodType;
+import com.example.StoreManagement.enums.PaymentProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

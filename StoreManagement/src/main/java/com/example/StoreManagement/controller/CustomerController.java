@@ -1,16 +1,18 @@
 package com.example.StoreManagement.controller;
 
-import com.example.StoreManagement.model.dtoRequest.CustomerDtoPostRequest;
-import com.example.StoreManagement.model.dtoResponse.CustomerDtoDetailResponse;
-import com.example.StoreManagement.model.dtoResponse.CustomerDtoResponse;
+import com.example.StoreManagement.dtos.dtoRequest.CustomerDtoPutRequest;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoRequest.CustomerDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoResponse.CustomerDtoDetailResponse;
+import com.example.StoreManagement.dtos.dtoResponse.CustomerDtoResponse;
 import com.example.StoreManagement.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,10 +23,16 @@ public class CustomerController {
 
 
     @GetMapping
-    public ResponseEntity<List<CustomerDtoResponse>> getAll() {
+    public ResponseEntity<PagingResult<CustomerDtoResponse>> getAll(
+            @RequestParam(defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(defaultValue = "10", required = false) Integer size,
+            @RequestParam(defaultValue = "id", required = false) String sortField,
+            @RequestParam(defaultValue = "ASC", required = false) Sort.Direction sortDirection
+    ) {
+        PaginationRequest request = new PaginationRequest(pageNumber, size, sortField, sortDirection);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.customerService.findAll());
+                .body(this.customerService.findAll(request));
     }
 
     @GetMapping("/id/{id}")
@@ -35,10 +43,17 @@ public class CustomerController {
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<List<CustomerDtoResponse>> getByName(@PathVariable String name) {
+    public ResponseEntity<PagingResult<CustomerDtoResponse>> getByName(
+            @PathVariable String name,
+            @RequestParam(defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(defaultValue = "10", required = false) Integer size,
+            @RequestParam(defaultValue = "id", required = false) String sortField,
+            @RequestParam(defaultValue = "ASC", required = false) Sort.Direction sortDirection
+    ) {
+        PaginationRequest request = new PaginationRequest(pageNumber, size, sortField, sortDirection);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.customerService.findByName(name));
+                .body(this.customerService.findByName(name, request));
     }
 
     @GetMapping("/cpf/{cpf}")
@@ -57,11 +72,11 @@ public class CustomerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CustomerDtoDetailResponse> update(
-            @PathVariable Long id, @RequestBody @Valid CustomerDtoPostRequest customerDtoPostRequest
+            @PathVariable Long id, @RequestBody @Valid CustomerDtoPutRequest putRequest
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.customerService.update(id, customerDtoPostRequest));
+                .body(this.customerService.update(id, putRequest));
     }
 
     @DeleteMapping("{id}")

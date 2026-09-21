@@ -1,17 +1,17 @@
 package com.example.StoreManagement.service;
 
 import com.example.StoreManagement.mapstruct.mappers.StoreMapper;
-import com.example.StoreManagement.model.PaginationRequest;
-import com.example.StoreManagement.model.PaginationUtils;
-import com.example.StoreManagement.model.dtoRequest.StoreDtoPostRequest;
-import com.example.StoreManagement.model.dtoRequest.StoreDtoPutRequest;
-import com.example.StoreManagement.model.PagingResult;
-import com.example.StoreManagement.model.dtoResponse.StoreDtoDetailResponse;
-import com.example.StoreManagement.model.dtoResponse.StoreDtoResponse;
+import com.example.StoreManagement.utils.PaginationRequest;
+import com.example.StoreManagement.utils.PaginationUtils;
+import com.example.StoreManagement.dtos.dtoRequest.StoreDtoPostRequest;
+import com.example.StoreManagement.dtos.dtoRequest.StoreDtoPutRequest;
+import com.example.StoreManagement.utils.PagingResult;
+import com.example.StoreManagement.dtos.dtoResponse.StoreDtoDetailResponse;
+import com.example.StoreManagement.dtos.dtoResponse.StoreDtoResponse;
 import com.example.StoreManagement.model.entity.Address;
 import com.example.StoreManagement.model.entity.Store;
-import com.example.StoreManagement.model.repository.AddressRepository;
-import com.example.StoreManagement.model.repository.StoreRepository;
+import com.example.StoreManagement.repository.AddressRepository;
+import com.example.StoreManagement.repository.StoreRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -78,9 +78,8 @@ public class StoreService {
     }
 
 
-
     public StoreDtoDetailResponse create(StoreDtoPostRequest dtoPostRequest) {
-        if (dtoPostRequest.cnpj().length() != 13) 
+        if (dtoPostRequest.cnpj().length() != 14)
             throw new RuntimeException("Invalid CNPJ");
 
         Store existingByCnpj = this.storeRepository.findByCnpj(dtoPostRequest.cnpj());
@@ -96,8 +95,8 @@ public class StoreService {
         this.checkEmailAvailability(dtoPostRequest.email(), null);
 
         Store store = this.storeMapper.dtoPostRequestToEntity(dtoPostRequest);
-        if (dtoPostRequest.addressID() != null) {
-            Address address = this.addressRepository.findById(dtoPostRequest.addressID())
+        if (dtoPostRequest.addressId() != null) {
+            Address address = this.addressRepository.findById(dtoPostRequest.addressId())
                     .orElseThrow(() -> new EntityNotFoundException("Address not found with this ID!"));
             store.setAddress(address);
         } else {
@@ -108,49 +107,41 @@ public class StoreService {
         return this.storeMapper.entityToDtoDetailResponse(store);
     }
 
+
     public StoreDtoDetailResponse update(Long id, StoreDtoPutRequest dtoPutRequest) {
-        Store existingActiveStore = this.storeRepository.findByIdAndActiveTrue(id)
+        Store existingStore = this.storeRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
 
+        this.checkCnpjAvailability(dtoPutRequest.cnpj(), existingStore.getId());
+        this.checkEmailAvailability(dtoPutRequest.email(), existingStore.getId());
 
-        this.checkCnpjAvailability(dtoPutRequest.cnpj(), existingActiveStore.getId());
+        Address address = this.addressRepository.findById(dtoPutRequest.addressId())
+                .orElseThrow(() -> new RuntimeException("Address not found"));
 
-        this.checkEmailAvailability(dtoPutRequest.email(), existingActiveStore.getId());
+        storeMapper.updateEntity(dtoPutRequest, existingStore);
+        this.storeRepository.save(existingStore);
 
-        Store updatedStore = this.storeMapper.dtoPutRequestToEntity(dtoPutRequest);
-        if (dtoPutRequest.addressID() != null) {
-            Address address = this.addressRepository.findById(dtoPutRequest.addressID())
-                    .orElseThrow(() -> new RuntimeException("Address not found"));
-            updatedStore.setAddress(address);
-        } else {
-            updatedStore.setAddress(null);
-        }
-
-        updatedStore.setId(existingActiveStore.getId());
-        this.storeRepository.save(updatedStore);
-        return this.storeMapper.entityToDtoDetailResponse(updatedStore);
+        return this.storeMapper.entityToDtoDetailResponse(existingStore);
     }
 
-    public StoreDtoDetailResponse update(Long storeId, String cnpj) {
-        Store existingActiveStore = this.storeRepository.findByIdAndActiveTrue(storeId)
-                .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
-
-
-        this.checkCnpjAvailability(cnpj, existingActiveStore.getId());
-
-        existingActiveStore.setCnpj(cnpj);
-        this.storeRepository.save(existingActiveStore);
-        return this.storeMapper.entityToDtoDetailResponse(existingActiveStore);
-    }
-
-    public StoreDtoResponse update(Long storeId, Long addressId) {
+    public StoreDtoDetailResponse updateCnpj(Long storeId, StoreDtoPutRequest.Cnpj putRequest) {
         Store store = this.storeRepository.findByIdAndActiveTrue(storeId)
                 .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
 
 
-        Address address = this.addressRepository.findById(addressId)
-                .orElseThrow(() -> new EntityExistsException("Address not found with this ID"));
+        this.checkCnpjAvailability(putRequest.cnpj(), store.getId());
 
+        store.setCnpj(putRequest.cnpj());
+        this.storeRepository.save(store);
+        return this.storeMapper.entityToDtoDetailResponse(store);
+    }
+
+    public StoreDtoResponse updateAddress(Long storeId, StoreDtoPutRequest.Adress putRequest) {
+        Store store = this.storeRepository.findByIdAndActiveTrue(storeId)
+                .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
+
+        Address address = this.addressRepository.findById(putRequest.addressId())
+                .orElseThrow(() -> new EntityExistsException("Address not found with this ID"));
 
         store.setAddress(address);
         this.storeRepository.save(store);
@@ -167,8 +158,8 @@ public class StoreService {
 
     private Store reactivateStore(Store store, StoreDtoPostRequest dtoPostRequest) {
 
-        if (dtoPostRequest.addressID() != null) {
-            Address address = this.addressRepository.findById(dtoPostRequest.addressID())
+        if (dtoPostRequest.addressId() != null) {
+            Address address = this.addressRepository.findById(dtoPostRequest.addressId())
                     .orElseThrow(() -> new EntityNotFoundException("Address not found!"));
             store.setAddress(address);
         } else {
@@ -191,8 +182,8 @@ public class StoreService {
     }
 
     private void checkCnpjAvailability(String cnpj, Long currentStoreId) {
-
         Store existingByCnpj = this.storeRepository.findByCnpj(cnpj);
+
         if (existingByCnpj != null && !existingByCnpj.getId().equals(currentStoreId))
             throw new EntityExistsException("This CNPJ already belongs to another Store");
     }
