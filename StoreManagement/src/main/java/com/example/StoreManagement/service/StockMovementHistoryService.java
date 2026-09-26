@@ -25,7 +25,10 @@ public class StockMovementHistoryService {
        Pageable pageable = PaginationUtils.getPageable(request);
 
        Page<StockMovementHistory> stockMovementHistoryPage = stockMovementHistoryRespository.findAll(pageable);
-       List<StockMovementHistoryDtoResponse> stockMovementHistoryDtoList = stockMovementHistoryPage.stream().map(stockMovementHistoryMapper::entityToDtoResponse).toList();
+       List<StockMovementHistoryDtoResponse> stockMovementHistoryDtoList = stockMovementHistoryPage
+               .stream()
+               .map(stockMovementHistoryMapper::entityToDtoResponse)
+               .toList();
 
         return new PagingResult<>(
                 stockMovementHistoryDtoList,

@@ -8,5 +8,5 @@ public record ProductDtoResponse(
         String photo,
         String salePrice,
         String costPrice,
-        Long categoryID
+        Long categoryId
 ) {}

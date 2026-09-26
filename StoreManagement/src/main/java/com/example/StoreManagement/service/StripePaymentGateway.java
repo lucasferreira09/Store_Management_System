@@ -1,5 +1,7 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.payment.InvalidSessionStateException;
+import com.example.StoreManagement.Exception.payment.UnsupportedPaymentMethodException;
 import com.example.StoreManagement.dtos.dtoRequest.CheckoutCreationRequest;
 import com.example.StoreManagement.dtos.dtoResponse.ProviderCheckoutResponse;
 import com.example.StoreManagement.enums.PaymentMethodType;
@@ -31,7 +33,7 @@ public class StripePaymentGateway implements PaymentGateway {
         if (checkoutCreationRequest.paymentMethodType() == PaymentMethodType.CARD) {
             return this.createCheckout(checkoutCreationRequest);
         } else if (checkoutCreationRequest.paymentMethodType() == PaymentMethodType.PIX) {
-            throw new RuntimeException("PIX is not supported yet");
+            throw new UnsupportedPaymentMethodException(PaymentMethodType.PIX.toString());
         } else {
             return null;
         }
@@ -118,12 +120,12 @@ public class StripePaymentGateway implements PaymentGateway {
         }
 
         if(!"open".equals(session.getStatus()))
-            throw new RuntimeException("Session already completed or expired");
+            throw new InvalidSessionStateException(InvalidSessionStateException.SESSION_COMPLETED_OR_EXPIRED);
 
         try {
             session.expire();
         } catch (StripeException e) {
-            throw new RuntimeException("Session already completed or expired");
+            throw new InvalidSessionStateException(InvalidSessionStateException.SESSION_COMPLETED_OR_EXPIRED);
         }
     }
 

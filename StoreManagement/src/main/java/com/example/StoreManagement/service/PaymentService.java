@@ -1,5 +1,9 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.ResourceAlreadyInUseException;
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
+import com.example.StoreManagement.Exception.payment.InvalidCheckoutResponseException;
+import com.example.StoreManagement.Exception.payment.InvalidPaymentStateException;
 import com.example.StoreManagement.dtos.dtoResponse.*;
 import com.example.StoreManagement.mapstruct.mappers.PaymentMapper;
 import com.example.StoreManagement.utils.PaginationRequest;
@@ -15,7 +19,6 @@ import com.example.StoreManagement.enums.OrderStatus;
 import com.example.StoreManagement.enums.PaymentStatus;
 import com.example.StoreManagement.repository.PaymentRepository;
 import com.example.StoreManagement.repository.TransactionRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +39,7 @@ public class PaymentService {
     private final OrderService orderService;
     private final TransactionRepository transactionRepository;
     private final PaymentMapper paymentMapper;
+    private static final String entityName = "Payment";
 
 
     public PagingResult<PaymentDtoReponse> findAll(PaginationRequest request) {
@@ -59,7 +63,7 @@ public class PaymentService {
     private void updatePayment(PaymentCreation paymentCreation) {
         Optional<Payment> payment = this.paymentRepository.findByCheckoutId(paymentCreation.checkoutId());
         if (payment.isEmpty())
-            throw new EntityNotFoundException("Payment not found");
+            throw new ResourceNotFoundException(entityName, "CheckoutID:" + paymentCreation.checkoutId());
 
 
         payment.get().setPaymentProvider(paymentCreation.paymentProvider());
@@ -73,7 +77,7 @@ public class PaymentService {
     private void savePayment(PaymentCreation paymentCreation) {
         Optional<Payment> existingPayment = this.paymentRepository.findByCheckoutId(paymentCreation.checkoutId());
         if (existingPayment.isPresent())
-            throw new EntityNotFoundException("Payment already exists");
+            throw new ResourceAlreadyInUseException(entityName, "CheckoutID:" + paymentCreation.checkoutId());
 
 
         Payment payment = this.paymentMapper.paymentCreationToPayment(paymentCreation);
@@ -85,7 +89,7 @@ public class PaymentService {
     private PaymentChanged reusePayment(PaymentCreationRequest paymentCreationRequest) {
         Optional<Payment> existingPayment = this.paymentRepository.findByCheckoutId(paymentCreationRequest.checkoutId());
         if (existingPayment.isPresent() && existingPayment.get().getPaymentStatus() != PaymentStatus.PENDING)
-            throw new IllegalStateException("Cannot modify payment for checkout %s. Payment already completed".formatted(paymentCreationRequest.checkoutId()));
+            throw new InvalidPaymentStateException(InvalidPaymentStateException.ALREADY_COMPLETED);
 
 
         boolean canReusePayment = existingPayment.isPresent()
@@ -110,8 +114,7 @@ public class PaymentService {
 
     private PaymentChanged handleExistingPayment(Optional<Payment> payment, PaymentCreationRequest paymentCreationRequest) {
         if (payment.get().getPaymentStatus() != PaymentStatus.PENDING)
-            throw new IllegalStateException("Cannot modify payment for checkout %s: already %s"
-                            .formatted(payment.get().getCheckoutId(), payment.get().getPaymentStatus()));
+            throw new InvalidPaymentStateException(InvalidPaymentStateException.ALREADY_COMPLETED);
 
 
         boolean sameProvider = payment.get().getPaymentProvider() == paymentCreationRequest.paymentProvider();
@@ -133,7 +136,7 @@ public class PaymentService {
 
         OrderCreationResponse orderCreationResponse = orderService.getCheckoutById(paymentCreationRequest.checkoutId());
         if (orderCreationResponse.status() != OrderStatus.AWAITING_PAYMENT)
-            throw new IllegalArgumentException("Cannot create payment for checkout %s. These orders are already completed".formatted(paymentCreationRequest.checkoutId()));
+            throw new InvalidPaymentStateException(InvalidPaymentStateException.ORDERS_ARE_ALREADY_COMPLETED);
 
         CheckoutCreationRequest checkoutCreationRequest = new CheckoutCreationRequest(
                 paymentCreationRequest.checkoutId(),
@@ -160,7 +163,7 @@ public class PaymentService {
 
             ProviderCheckoutResponse checkoutResponse = gateway.processPayment(checkoutCreationRequest);
             if (checkoutResponse == null)
-              throw new RuntimeException("Error processing payment");
+              throw new InvalidCheckoutResponseException("Error processing payment");
 
             PaymentCreation paymentCreation = this.paymentMapper.providerCheckoutToPaymentCreation(checkoutResponse);
             PaymentCreationResponse creationResponse =  this.paymentMapper.providerCheckoutToPaymentCreationResponse(checkoutResponse);
@@ -172,7 +175,7 @@ public class PaymentService {
 
             ProviderCheckoutResponse checkoutResponse = gateway.processPayment(checkoutCreationRequest);
             if (checkoutResponse == null)
-                throw new RuntimeException("Error processing payment");
+                throw new InvalidCheckoutResponseException("Error processing payment");
 
             return handleNewPayment(paymentCreationRequest, checkoutResponse);
         }
@@ -181,7 +184,7 @@ public class PaymentService {
     public void processPaymentSucceeded(PaymentCompletedData data) {
         Optional<Payment> payment = this.paymentRepository.findByCheckoutId(data.checkoutId());
         if (payment.isEmpty())
-            throw new EntityNotFoundException("Payment not found");
+            throw new ResourceNotFoundException(entityName, "CheckoutID:" + data.checkoutId().toString());
 
         payment.get().setPaymentStatus(PaymentStatus.APPROVED);
         payment.get().setPaidAt(data.createdAt());
@@ -194,7 +197,7 @@ public class PaymentService {
     public void processPaymentFailed(PaymentCompletedData data) {
         Optional<Payment> payment = this.paymentRepository.findByCheckoutId(data.checkoutId());
         if (payment.isEmpty())
-            throw new EntityNotFoundException("Payment not found");
+            throw new ResourceNotFoundException(entityName, "CheckoutID:" + data.checkoutId().toString());
 
         payment.get().setPaymentStatus(PaymentStatus.FAILED);
         this.paymentRepository.save(payment.get());
@@ -213,7 +216,7 @@ public class PaymentService {
     public PaymentDtoReponse findByCheckoutId(UUID checkoutId) {
         Optional<Payment> payment = this.paymentRepository.findByCheckoutId(checkoutId);
         if (!payment.isPresent())
-            throw new EntityNotFoundException("Payment not found");
+            throw new ResourceNotFoundException(entityName, "CheckoutID:" + checkoutId.toString());
 
         return this.paymentMapper.entityToPaymentDtoResponse(payment.get());
     }
@@ -221,11 +224,11 @@ public class PaymentService {
     private Payment expireExistingPayment(UUID checkoutId) {
         Optional<Payment> payment = this.paymentRepository.findByCheckoutId(checkoutId);
         if (!payment.isPresent())
-            throw new EntityNotFoundException("Payment not found");
+            throw new ResourceNotFoundException(entityName, "CheckoutID:" + checkoutId.toString());
 
         if (payment.get().getPaymentStatus() == PaymentStatus.APPROVED ||
                 payment.get().getPaymentStatus() == PaymentStatus.CANCELLED) {
-            throw new IllegalStateException("Cannot modify payment for checkout %s. Payment already completed or expired".formatted(checkoutId));
+            throw new InvalidPaymentStateException(InvalidPaymentStateException.ALREADY_COMPLETED);
         }
 
 
@@ -244,10 +247,10 @@ public class PaymentService {
     public String getCheckoutUrl(UUID checkoutId) {
         Optional<Payment> payment = this.paymentRepository.findByCheckoutId(checkoutId);
         if (!payment.isPresent())
-            throw new EntityNotFoundException("Payment not found");
+            throw new ResourceNotFoundException(entityName, "CheckoutID:" + checkoutId.toString());
 
         if (payment.get().getPaymentStatus() == PaymentStatus.APPROVED || payment.get().getPaymentStatus() == PaymentStatus.CANCELLED)
-            throw new IllegalStateException("Cannot pay for checkout %s. It's already completed or expired".formatted(checkoutId));
+            throw new InvalidPaymentStateException(InvalidPaymentStateException.ALREADY_COMPLETED);
 
 
         PaymentGateway gateway = this.gatewayFactory.get(payment.get().getPaymentProvider());

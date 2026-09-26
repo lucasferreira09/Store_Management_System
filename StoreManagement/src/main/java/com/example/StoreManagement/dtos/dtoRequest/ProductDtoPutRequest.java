@@ -25,6 +25,6 @@ public record ProductDtoPutRequest(
         @PositiveOrZero(message = "Cost price must be positive")
         BigDecimal costPrice,
 
-        @NotNull(message = "CategoryID must not be empty")
-        Long categoryID
+        @NotNull(message = "CategoryId must not be empty")
+        Long categoryId
 ) {}

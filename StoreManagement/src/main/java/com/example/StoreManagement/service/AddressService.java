@@ -1,6 +1,9 @@
 package com.example.StoreManagement.service;
 
 import java.util.List;
+
+import com.example.StoreManagement.Exception.ResourceAlreadyInUseException;
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
 import com.example.StoreManagement.mapstruct.mappers.AddressMapper;
 import com.example.StoreManagement.utils.PaginationRequest;
 import com.example.StoreManagement.utils.PaginationUtils;
@@ -12,7 +15,6 @@ import com.example.StoreManagement.model.entity.Address;
 import com.example.StoreManagement.repository.AddressRepository;
 import com.example.StoreManagement.repository.CustomerAddressRepository;
 import com.example.StoreManagement.repository.StoreRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,7 +30,7 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final CustomerAddressRepository customerAddressRepository;
     private final StoreRepository storeRepository;
-
+    private static final String entityName = "Address";
 
     public PagingResult<AddressDtoResponse> findAll(PaginationRequest paginationRequest) {
         Pageable pageable = PaginationUtils.getPageable(paginationRequest);
@@ -49,7 +51,7 @@ public class AddressService {
 
     public AddressDtoResponse findById(Long id) {
         Address address = this.addressRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Address not found with this id!"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         return this.addressMapper.entityToDtoResponse(address);
     }
@@ -65,7 +67,7 @@ public class AddressService {
     @Transactional
     public AddressDtoResponse update(Long id, AddressDtoPutRequest dtoPutRequest) {
         Address address = this.addressRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Address not found with this id!"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         addressMapper.updateEntity(dtoPutRequest, address);
         addressRepository.save(address);
@@ -76,10 +78,10 @@ public class AddressService {
     @Transactional
     public void delete(Long id) {
         Address address = this.addressRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Address not found with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         if (this.storeRepository.existsByAddressId(id) || this.customerAddressRepository.existsByAddressId(id))
-            throw new IllegalStateException("Address already in use");
+            throw new ResourceAlreadyInUseException(entityName, "ID:" + id.toString());
 
         this.addressRepository.delete(address);
     }

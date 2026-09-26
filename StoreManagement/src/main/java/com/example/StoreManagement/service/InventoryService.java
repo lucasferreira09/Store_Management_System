@@ -1,5 +1,7 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.ResourceAlreadyInUseException;
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
 import com.example.StoreManagement.mapstruct.mappers.InventoryMapper;
 import com.example.StoreManagement.utils.PaginationRequest;
 import com.example.StoreManagement.utils.PaginationUtils;
@@ -35,6 +37,7 @@ public class InventoryService {
     private final StockMovementHistoryService stockMovementHistoryService;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
+    private static final String entityName = "Inventory";
 
 
     public PagingResult<InventoryDtoResponse> findAll(PaginationRequest request) {
@@ -58,17 +61,17 @@ public class InventoryService {
         if (dtoPostRequest.quantity() < 0)
             throw new RuntimeException("Quantity must be greater or equal than zero");
 
-        Product product = this.productRepository.findByIdAndActiveTrueAndCategoryActiveTrue(dtoPostRequest.productID())
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with this ID"));
+        Product product = this.productRepository.findByIdAndActiveTrueAndCategoryActiveTrue(dtoPostRequest.productId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "ID:" + dtoPostRequest.productId().toString()));
 
-        Store store = this.storeRepository.findByIdAndActiveTrue(dtoPostRequest.storeID())
-                .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
+        Store store = this.storeRepository.findByIdAndActiveTrue(dtoPostRequest.storeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Store", "ID:" + dtoPostRequest.storeId().toString()));
 
 
-        Inventory existingInventory = this.inventoryRepository.findByStoreIdAndProductId(dtoPostRequest.storeID(), dtoPostRequest.productID());
+        Inventory existingInventory = this.inventoryRepository.findByStoreIdAndProductId(dtoPostRequest.storeId(), dtoPostRequest.productId());
         if (existingInventory != null) {
             if (existingInventory.isActive())
-                throw new EntityExistsException("Inventory already exists");
+                throw new ResourceAlreadyInUseException(entityName, "ID:" + existingInventory.getId().toString());
 
             return this.inventoryMapper.entityToDtoResponse(
                     this.reactivateInventory(existingInventory, dtoPostRequest.quantity()));
@@ -84,7 +87,9 @@ public class InventoryService {
         Pageable pageable = PaginationUtils.getPageable(request);
         Page<Inventory> inventoriesPage = this.inventoryRepository.findValidInventoriesByStoreId(id, pageable);
 
-        List<InventoryDtoResponse> inventoriesDtoList = inventoriesPage.stream().map(inventoryMapper::entityToDtoResponse).toList();
+        List<InventoryDtoResponse> inventoriesDtoList = inventoriesPage
+                .stream()
+                .map(inventoryMapper::entityToDtoResponse).toList();
 
         return new PagingResult<>(
                 inventoriesDtoList,
@@ -99,7 +104,7 @@ public class InventoryService {
 
     public void processMovement(StockMovementRequest.DtoPostRequest dtoPostRequest) {
         Inventory inventory = this.inventoryRepository.findById(dtoPostRequest.inventoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found with this ID"));
+                .orElseThrow(() -> new ResourceAlreadyInUseException(entityName, "ID:" + dtoPostRequest.inventoryId().toString()));
 
         processMovement(new StockMovementRequest(
                 inventory,
@@ -117,7 +122,7 @@ public class InventoryService {
 
         Inventory inventory = movementRequest.inventory();
         if (inventory == null)
-            throw new EntityNotFoundException("Inventory not found");
+            throw new ResourceNotFoundException(entityName, "");
 
         if (movementRequest.quantity() < 0)
             throw new RuntimeException("Quantity must be greater or equal than zero");
@@ -162,7 +167,7 @@ public class InventoryService {
         stockMovementHistory.setType(movementRequest.type());
         stockMovementHistory.setReason(movementRequest.reason());
         stockMovementHistory.setQuantity(movementRequest.quantity());
-        stockMovementHistory.setOrderId(movementRequest.orderId());
+        stockMovementHistory.setOrderId(movementRequest.orderId().toString());
         stockMovementHistory.setCreatedAt(movementRequest.created());
         stockMovementHistory.setDescription(movementRequest.description());
         this.stockMovementHistoryRespository.save(stockMovementHistory);

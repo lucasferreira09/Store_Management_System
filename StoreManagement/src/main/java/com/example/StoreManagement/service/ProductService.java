@@ -1,5 +1,7 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.ResourceAlreadyInUseException;
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
 import com.example.StoreManagement.dtos.dtoRequest.ProductDtoPutRequest;
 import com.example.StoreManagement.mapstruct.mappers.ProductMapper;
 import com.example.StoreManagement.utils.PaginationRequest;
@@ -26,6 +28,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private static final String entityName = "Product";
 
 
     public PagingResult<ProductDtoResponse> findAll(PaginationRequest request) {
@@ -47,7 +50,7 @@ public class ProductService {
 
     public ProductDtoResponse findById(Long id) {
         Product product = this.productRepository.findByIdAndActiveTrueAndCategoryActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with this ID."));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         return this.productMapper.entityToDtoResponse(product);
     }
@@ -60,7 +63,7 @@ public class ProductService {
 
     public List<ProductDtoResponse> findByCategoryId(Long id) {
         Category category = this.categoryRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID."));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "ID:" + id.toString()));
 
         return this.productMapper.entitiesToAllDtoResponse(this.productRepository.findByCategoryIdAndActiveTrue(id));
     }
@@ -69,19 +72,19 @@ public class ProductService {
 
         Product product = this.productRepository.findByBarcodeAndActiveTrue(barcode);
         if (product == null)
-            throw new EntityNotFoundException("Product not found with this barcode!");
+            throw new ResourceNotFoundException(entityName, "Barcode:" + barcode.toString());
 
         return this.productMapper.entityToDtoResponse(product);
     }
 
     public ProductDtoResponse create(ProductDtoPostRequest dtoPost) {
-        Category category = this.categoryRepository.findByIdAndActiveTrue(dtoPost.categoryID())
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID."));
+        Category category = this.categoryRepository.findByIdAndActiveTrue(dtoPost.categoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "ID:" + dtoPost.categoryId().toString()));
 
         Product existingByBarcode = this.productRepository.findByBarcode(dtoPost.barcode());
         if (existingByBarcode != null) {
             if (existingByBarcode.isActive())
-                throw new EntityExistsException("This product already exists");
+                throw new ResourceAlreadyInUseException(entityName, "Barcode:" + dtoPost.barcode());
 
             Product reactivatedProduct = this.reactivateProduct(existingByBarcode, dtoPost);
             return this.productMapper.entityToDtoResponse(reactivatedProduct);
@@ -95,14 +98,14 @@ public class ProductService {
 
     public ProductDtoResponse update(Long id, ProductDtoPutRequest putRequest) {
         Product product = this.productRepository.findByIdAndActiveTrueAndCategoryActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
-        Category category = this.categoryRepository.findByIdAndActiveTrue(putRequest.categoryID())
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID."));
+        Category category = this.categoryRepository.findByIdAndActiveTrue(putRequest.categoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "ID:" + putRequest.categoryId().toString()));
 
         Product existingByBarcode = this.productRepository.findByBarcode(putRequest.barcode());
         if (existingByBarcode != null && !existingByBarcode.getId().equals(product.getId()))
-            throw new EntityExistsException("This barcode already belongs to another Product");
+            throw new ResourceAlreadyInUseException(entityName, "Barcode:" + putRequest.barcode().toString());
 
 
         productMapper.updateEntity(putRequest, product);
@@ -114,10 +117,10 @@ public class ProductService {
 
     public ProductDtoResponse updateCategory(Long productId, Long categoryId) {
         Product product = this.productRepository.findByIdAndActiveTrueAndCategoryActiveTrue(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + productId.toString()));
 
         Category category = this.categoryRepository.findByIdAndActiveTrue(categoryId)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID."));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "ID:" + categoryId.toString()));
 
         product.setCategory(category);
         productRepository.save(product);
@@ -127,14 +130,14 @@ public class ProductService {
 
     public void delete(Long id) {
         Product product = this.productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         this.productRepository.delete(product);
     }
 
     private Product reactivateProduct(Product product, ProductDtoPostRequest dtoPostRequest) {
-        Category category = this.categoryRepository.findByIdAndActiveTrue(dtoPostRequest.categoryID())
-                .orElseThrow(() -> new EntityNotFoundException("Category not found!"));
+        Category category = this.categoryRepository.findByIdAndActiveTrue(dtoPostRequest.categoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "ID:" + dtoPostRequest.categoryId().toString()));
 
         product.setActive(true);
         product.setName(dtoPostRequest.name());

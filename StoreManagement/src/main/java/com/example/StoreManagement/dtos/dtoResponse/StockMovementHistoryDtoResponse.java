@@ -10,8 +10,8 @@ public record StockMovementHistoryDtoResponse(
         StockMovementReason reason,
         String orderId,
         Instant createdAt,
-        Long storeID,
-        Long productID,
+        Long storeId,
+        Long productId,
         Integer quantity,
         String description
 ) {}

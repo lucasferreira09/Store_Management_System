@@ -3,6 +3,7 @@ package com.example.StoreManagement.dtos.dtoRequest;
 import com.example.StoreManagement.model.entity.Inventory;
 import com.example.StoreManagement.enums.StockMovementType;
 import com.example.StoreManagement.enums.StockMovementReason;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 

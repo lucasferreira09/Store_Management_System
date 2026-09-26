@@ -1,5 +1,6 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
 import com.example.StoreManagement.mapstruct.mappers.CustomerAddressMapper;
 import com.example.StoreManagement.utils.PaginationRequest;
 import com.example.StoreManagement.utils.PaginationUtils;
@@ -14,7 +15,6 @@ import com.example.StoreManagement.model.entity.CustomerAddress;
 import com.example.StoreManagement.repository.AddressRepository;
 import com.example.StoreManagement.repository.CustomerAddressRepository;
 import com.example.StoreManagement.repository.CustomerRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,12 +31,15 @@ public class CustomerAddressService {
     private final CustomerAddressMapper customerAddressMapper;
     private final CustomerRepository customerRepository;
     private final AddressRepository addressRepository;
+    private static final String entityName = "CustomerAddress";
 
 
     public PagingResult<CustomerAddressResponse> findAll(PaginationRequest request) {
         Pageable pageable = PaginationUtils.getPageable(request);
-        Page<CustomerAddress> customerAddressesPage = this.customerAddressRepository.findAll(pageable);
-        List<CustomerAddressResponse> customerAddressesDto = customerAddressesPage.stream().map(customerAddressMapper::entityToDtoResponse).toList();
+        Page<CustomerAddress> customerAddressesPage = customerAddressRepository.findAll(pageable);
+        List<CustomerAddressResponse> customerAddressesDto = customerAddressesPage
+                .stream()
+                .map(customerAddressMapper::entityToDtoResponse).toList();
 
         return new PagingResult<>(
                 customerAddressesDto,
@@ -50,20 +53,20 @@ public class CustomerAddressService {
     }
 
     public List<CustomerAddressDetailsResponse> findByCustomerId(Long id) {
-        List<CustomerAddress> customerAddress = this.customerAddressRepository.findByCustomerId(id);
+        List<CustomerAddress> customerAddress = customerAddressRepository.findByCustomerId(id);
 
         if (customerAddress == null) {
-            throw new EntityNotFoundException("Customer not found with this ID");
+            throw new ResourceNotFoundException(entityName, "ID:" + id.toString());
         }
 
         return customerAddressMapper.entitiesToDetailsResponse(customerAddress);
     }
 
     public List<CustomerAddressDetailsResponse> findByAddressId(Long id) {
-        List<CustomerAddress> customerAddress = this.customerAddressRepository.findByAddressId(id);
+        List<CustomerAddress> customerAddress = customerAddressRepository.findByAddressId(id);
 
         if (customerAddress == null) {
-            throw new EntityNotFoundException("Address not found with this ID");
+            throw new ResourceNotFoundException(entityName, "ID:" + id.toString());
         }
 
         return customerAddressMapper.entitiesToDetailsResponse(customerAddress);
@@ -71,32 +74,33 @@ public class CustomerAddressService {
 
     @Transactional
     public CustomerAddressResponse create(CustomerAddressDtoPostRequest dtoPostRequest) {
-        Customer customer = this.customerRepository.findById(dtoPostRequest.customerID())
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID!"));
+        Customer customer = customerRepository.findById(dtoPostRequest.customerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "ID:" + dtoPostRequest.customerId().toString()));
 
-        Address address = this.addressRepository.findById(dtoPostRequest.addressID())
-                .orElseThrow(() -> new EntityNotFoundException("Address not found with this ID!"));
+        Address address = addressRepository.findById(dtoPostRequest.addressId())
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "ID:" + dtoPostRequest.addressId().toString()));
 
-        CustomerAddress customerAddress = this.customerAddressRepository.findByCustomerIdAndAddressId(dtoPostRequest.customerID(), dtoPostRequest.addressID());
+        CustomerAddress customerAddress =
+                customerAddressRepository.findByCustomerIdAndAddressId(dtoPostRequest.customerId(), dtoPostRequest.addressId());
+
         if (customerAddress == null) {
             customerAddress = new CustomerAddress();
             customerAddress.setCustomer(customer);
             customerAddress.setAddress(address);
         }
 
-        this.customerAddressRepository.save(customerAddress);
-        return this.customerAddressMapper.entityToDtoResponse(customerAddress);
+        customerAddressRepository.save(customerAddress);
+        return customerAddressMapper.entityToDtoResponse(customerAddress);
     }
 
     @Transactional
     public CustomerAddressResponse update(Long customerId, Long addressId, CustomerAddressPutRequest putRequest) {
-       Address address = this.addressRepository.findById(putRequest.addressID())
-                .orElseThrow(() -> new EntityNotFoundException("Address not found with this ID"));
-
+       Address address = addressRepository.findById(putRequest.addressId())
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "ID:" + putRequest.addressId().toString()));
 
         CustomerAddress existCustomerAddress = this.customerAddressRepository.findByCustomerIdAndAddressId(customerId, addressId);
         if (existCustomerAddress == null)
-            throw new EntityNotFoundException("CustomerAddress not found with this ID");
+            throw new ResourceNotFoundException(entityName, "CustomerID: %s AddressID: %s".formatted(customerId, addressId));
 
         customerAddressMapper.updateEntity(putRequest, existCustomerAddress);
         this.customerAddressRepository.save(existCustomerAddress);
@@ -108,12 +112,15 @@ public class CustomerAddressService {
     public void delete(CustomerAddressDtoPostRequest dtoPostRequest) {
 
         CustomerAddress customerAddress = this.customerAddressRepository.findByCustomerIdAndAddressId(
-                dtoPostRequest.customerID(),
-                dtoPostRequest.addressID()
+                dtoPostRequest.customerId(),
+                dtoPostRequest.addressId()
         );
 
         if (customerAddress == null)
-            throw new EntityNotFoundException("CustomerAddress not found with this ID");
+            throw new ResourceNotFoundException(
+                    entityName,
+                    "CustomerID: %s AddressID: %s".formatted(dtoPostRequest.customerId(), dtoPostRequest.addressId())
+            );
 
 
         this.customerAddressRepository.delete(customerAddress);
