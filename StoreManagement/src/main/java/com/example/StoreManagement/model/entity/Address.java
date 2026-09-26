@@ -15,14 +15,14 @@ public class Address {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "street", nullable = false)
-    private String street;
+    @Column(name = "addressLine1", nullable = false, length = 100)
+    private String addressLine1;
+
+    @Column(name = "addressLine2")
+    private String addressLine2;
 
     @Column(name = "neighbourhood", nullable = false)
     private String neighbourhood;
-
-    @Column(name = "complement")
-    private String complement;
 
     @Column(name = "number")
     private String number;

@@ -11,12 +11,12 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface InventoryMapper {
 
-    @Mapping(source = "storeID", target = "store.id")
-    @Mapping(source = "productID", target = "product.id")
+    @Mapping(source = "storeId", target = "store.id")
+    @Mapping(source = "productId", target = "product.id")
     Inventory dtoPostRequestToEntity(InventoryDtoPostRequest dtoPostRequest);
 
-    @Mapping(source = "store.id", target = "storeID")
-    @Mapping(source = "product.id", target = "productID")
+    @Mapping(source = "store.id", target = "storeId")
+    @Mapping(source = "product.id", target = "productId")
     InventoryDtoResponse entityToDtoResponse(Inventory inventory);
 
     List<InventoryDtoResponse> entitiesToDtoResponse(List<Inventory> inventories);

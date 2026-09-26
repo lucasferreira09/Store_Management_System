@@ -1,5 +1,6 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
 import com.example.StoreManagement.dtos.dtoRequest.*;
 import com.example.StoreManagement.mapstruct.mappers.OrderItemMapper;
 import com.example.StoreManagement.mapstruct.mappers.OrderMapper;
@@ -42,6 +43,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
     private final StripePaymentGateway stripePaymentGateway;
+    private static final String entityName = "Order";
 
 
     public PagingResult<OrderDtoResponse> findAll(PaginationRequest request) {
@@ -62,7 +64,7 @@ public class OrderService {
 
     public OrderDetailsDtoResponse findById(Long id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         return this.orderMapper.entityToDetailDtoResponse(order);
     }
@@ -70,7 +72,7 @@ public class OrderService {
     public OrderCreationResponse getCheckoutById(UUID id) {
         List<Order> orders = orderRepository.findByCheckoutId(id);
         if (orders == null || orders.isEmpty()) {
-            throw new EntityNotFoundException("Orders not found for this checkoutId");
+            throw new ResourceNotFoundException(entityName, "CheckoutID:" + id.toString());
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -94,7 +96,9 @@ public class OrderService {
         Pageable pageable = PaginationUtils.getPageable(request);
         Page<Order> ordersPage = orderRepository.findByCheckoutId(checkoutId, pageable);
 
-        List<OrderDtoResponse> ordersDtoResponse = ordersPage.stream().map(orderMapper::entityToDtoResponse).toList();
+        List<OrderDtoResponse> ordersDtoResponse = ordersPage
+                .stream()
+                .map(orderMapper::entityToDtoResponse).toList();
 
         return new PagingResult<>(
                 ordersDtoResponse,
@@ -112,7 +116,9 @@ public class OrderService {
         Pageable pageable = PaginationUtils.getPageable(request);
 
         Page<Order> customerOrdersPage = this.orderRepository.findByCustomerId(id, pageable);
-        List<OrderDtoResponse> ordersDtoResponse = customerOrdersPage.stream().map(orderMapper::entityToDtoResponse).toList();
+        List<OrderDtoResponse> ordersDtoResponse = customerOrdersPage
+                .stream()
+                .map(orderMapper::entityToDtoResponse).toList();
 
         return new PagingResult<>(
                 ordersDtoResponse,
@@ -129,19 +135,26 @@ public class OrderService {
     @Transactional
     public OrderCreationResponse create(OrderDtoPostRequest orderRequest) throws IllegalAccessException {
         if (orderRequest.customerId() == null)
-            throw new IllegalAccessException("CustomerId must not be null");
+            throw new IllegalArgumentException("CustomerId must not be null");
 
         Customer customer = customerRepository.findById(orderRequest.customerId())
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "ID:" + orderRequest.customerId()));
 
 
         if (orderRequest.orderItems() == null || orderRequest.orderItems().isEmpty())
-            throw new IllegalAccessException("Order must have at least one item");
+            throw new IllegalArgumentException("Order must have at least one item");
 
         this.validateDuplicatedItems(orderRequest.orderItems());
 
-        List<Long> productsIds = orderRequest.orderItems().stream().map(OrderItemDtoPostRequest::productId).distinct().toList();
-        List<Long> storeIds = orderRequest.orderItems().stream().map(OrderItemDtoPostRequest::storeId).distinct().toList();
+        List<Long> productsIds = orderRequest.orderItems()
+                .stream()
+                .map(OrderItemDtoPostRequest::productId)
+                .distinct().toList();
+
+        List<Long> storeIds = orderRequest.orderItems()
+                .stream()
+                .map(OrderItemDtoPostRequest::storeId)
+                .distinct().toList();
 
 
         Map<Long, Product> productMap = productRepository.findAllById(productsIds).stream().collect(
@@ -156,7 +169,9 @@ public class OrderService {
         List<Inventory> inventories = inventoryRepository.findByStoreIdInAndProductIdIn(storeIds, productsIds);
 
         // Pick ONLY what we need
-        Map<InventoryKey, Inventory> inventoryMap = inventories.stream().collect(Collectors.toMap(
+        Map<InventoryKey, Inventory> inventoryMap = inventories
+                .stream()
+                .collect(Collectors.toMap(
                 inv -> new InventoryKey(inv.getStore().getId(), inv.getProduct().getId()),
                 inv -> inv
         ));
@@ -182,7 +197,7 @@ public class OrderService {
             List<OrderItemDtoPostRequest> itemsRequested = entry.getValue();
 
             Store store = storeRepository.findByIdAndActiveTrue(storeId)
-                    .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Store",  "ID:" + storeId.toString()));
 
 
             // Mapper only address fields
@@ -243,7 +258,7 @@ public class OrderService {
 
     private void validateOrderItem(OrderItemDtoPostRequest item, Inventory inventory, Product product) {
         if (inventory == null || !inventory.isActive())
-            throw new EntityNotFoundException("Inventory not found for StoreID: " + item.storeId() + " | ProductID: " + item.productId());
+            throw new ResourceNotFoundException(entityName, "StoreID:" + item.storeId() + " - ProductID:" + item.productId());
 
 
         if (item.quantity() <= 0)
@@ -254,7 +269,7 @@ public class OrderService {
 
 
         if (product == null || !product.isActive())
-            throw new EntityNotFoundException("Product not found or inactive");
+            throw new ResourceNotFoundException("Product", "ID:" + item.productId().toString());
     }
 
     private OrderItemCreated processOrderItem(OrderItemContext orderItemContext) {
@@ -286,9 +301,8 @@ public class OrderService {
     public void changeOrderStatus(UUID orderCheckoutId, OrderStatus orderStatus) {
         List<Order> orders = this.orderRepository.findByCheckoutId(orderCheckoutId);
 
-        orders.forEach(order -> {
-                    order.setStatus(orderStatus);
-                }
+        orders.forEach(
+                order -> { order.setStatus(orderStatus); }
         );
         orderRepository.saveAll(orders);
     }
@@ -302,7 +316,7 @@ public class OrderService {
     public void cancelOrder(UUID orderCheckoutId, String cancelMessage) {
         List<Order> orders = this.orderRepository.findByCheckoutId(orderCheckoutId);
         if (orders.isEmpty())
-            throw new EntityNotFoundException("Order not found for checkout ID: " + orderCheckoutId);
+            throw new ResourceNotFoundException(entityName, "CheckoutID:" + orderCheckoutId);
 
         validateCancellation(orders);
 
@@ -343,7 +357,7 @@ public class OrderService {
 
             Inventory inventory = inventoryMap.get(new InventoryKey(storeId, productId));
             if (inventory == null) {
-                throw new EntityNotFoundException("Inventory not found for StoreID: " + storeId + " | ProductID: " + productId);
+                throw new ResourceNotFoundException(entityName, "StoreID:" + storeId + " - ProductID:" + productId);
             }
 
             processStockMovement(new StockMovementRequest(

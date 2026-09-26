@@ -10,8 +10,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface StockMovementHistoryMapper {
 
-    @Mapping(source = "inventory.store.id", target = "storeID")
-    @Mapping(source = "inventory.product.id", target = "productID")
+    @Mapping(source = "inventory.store.id", target = "storeId")
+    @Mapping(source = "inventory.product.id", target = "productId")
     StockMovementHistoryDtoResponse entityToDtoResponse(StockMovementHistory stockMovementHistory);
 
     List<StockMovementHistoryDtoResponse> entitiesToDtoResponse(List<StockMovementHistory> stockMovementHistories);

@@ -35,33 +35,16 @@ create table customer (
 
 create table address (
      id serial primary key,
-     street varchar(100) not null,
+     address_line_1 varchar(100) not null,
+     address_line_2 varchar(100),
      neighbourhood varchar(100) not null,
-     complement varchar(20),
      number varchar(10),
      city varchar(50) not null,
      state varchar(50) not null,
      postal_code varchar(20) not null
 );
 
-create table customer_address (
-    id seriaL primary key,
-    customer_id INTEGER not null,
-    address_id INTEGER not null,
-    constraint fk_customer foreign key (customer_id) references customer (id),
-    constraint fk_address foreign key (address_id) references address (id) ON DELETE RESTRICT
-);
 
-create table store (
-   id serial primary key,
-   name varchar(100) not null,
-   cnpj varchar(14) unique not null constraint check_length_cnpj check (length(cnpj)=14),
-   phone_number varchar(20) not null,
-   email varchar(100) unique not null,
-   address_id INTEGER null,
-   active boolean not null default true,
-   constraint fk_address foreign key (address_id) references address (id)
-);
 
 create table inventory (
    id serial primary key,
@@ -76,10 +59,10 @@ create table inventory (
 
 create table orders (
     id serial primary key,
-    status varchar(20) not null,
+    status order_status not null,
     created_at TIMESTAMPTZ not null,
     total_amount numeric(10,2) not null,
-    street VARCHAR(100) not null,
+    address_line_1 VARCHAR(100) not null,
     number VARCHAR(10),
     city VARCHAR(50) not null,
     state VARCHAR(50) not null,
@@ -111,8 +94,10 @@ create table payment (
     checkout_id uuid null,
     payment_status VARCHAR(15) not null,
     payment_provider VARCHAR(20) not null,
+    payment_method_type payment_method_type not null,
     provider_session_id VARCHAR(255) null,
     created_at TIMESTAMPTZ not null,
+    expires_at TIMESTAMPTZ not null,
     paid_at TIMESTAMPTZ null
 );
 
@@ -120,13 +105,13 @@ create table transaction (
     id SERIAL PRIMARY KEY,
     amount NUMERIC(10,2),
     payment_status VARCHAR(15) not null,
-    payment_provider VARCHAR(20) not null,
-    payment_method_type VARCHAR(15) not null,
+    payment_provider payment_provider not null,
+    payment_method_type payment_method_type not null,
     provider_payment_id VARCHAR(255) null,
     provider_session_id VARCHAR(255) not null,
     provider_charge_id VARCHAR(255) null,
     card_brand VARCHAR(10) null,
-    las4 VARCHAR(4) null,
+    last4 VARCHAR(4) null,
     created_at TIMESTAMPTZ not null,
     payment_message VARCHAR(255) null,
     payment_id INTEGER null,
@@ -138,7 +123,7 @@ create table stock_movement_history(
     type stock_movement_type not null,
     reason stock_movement_reason not null,
     quantity INTEGER not null constraint check_valid_quantity check(quantity >= 0),
-    order_id INTEGER null,
+    order_id VARCHAR(255) null,
     created_at TIMESTAMPTZ not null,
     description VARCHAR(255) null,
     inventory_id INTEGER not null,

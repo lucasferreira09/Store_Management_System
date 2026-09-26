@@ -1,5 +1,6 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.payment.EventDeserializationException;
 import com.example.StoreManagement.dtos.dtoRequest.PaymentCompletedData;
 import com.example.StoreManagement.enums.PaymentMethodType;
 import com.example.StoreManagement.enums.PaymentProvider;
@@ -35,11 +36,9 @@ public class StripeWebhookService {
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         StripeObject stripeObject = null;
 
-        try {
-            stripeObject = dataObjectDeserializer.getObject().orElseThrow(() -> new IllegalAccessException("Failed to deserialize event"));
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        stripeObject = dataObjectDeserializer.getObject()
+                    .orElseThrow(() -> new EventDeserializationException("Failed to deserialize event"));
+
 
         Session session = (Session)  stripeObject;
 
@@ -99,11 +98,8 @@ public class StripeWebhookService {
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         StripeObject stripeObject = null;
 
-        try {
-            stripeObject = dataObjectDeserializer.getObject().orElseThrow(() -> new IllegalAccessException("Failed to deserialize event"));
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        stripeObject = dataObjectDeserializer.getObject()
+                    .orElseThrow(() -> new EventDeserializationException("Failed to deserialize event"));
 
         PaymentIntent paymentIntent = (PaymentIntent) stripeObject;
         String providerChargeId = paymentIntent.getLatestCharge();

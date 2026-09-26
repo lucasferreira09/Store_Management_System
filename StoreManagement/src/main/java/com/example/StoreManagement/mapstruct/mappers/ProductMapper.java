@@ -16,7 +16,7 @@ public interface ProductMapper {
     Product dtoPostRequestToEntity(ProductDtoPostRequest productDtoPostRequest);
     Product dtoPutRequestToEntity(ProductDtoPutRequest productDtoPutRequest);
 
-    @Mapping(source = "category.id", target = "categoryID")
+    @Mapping(source = "category.id", target = "categoryId")
     ProductDtoResponse entityToDtoResponse(Product product);
 
     List<ProductDtoResponse> entitiesToAllDtoResponse(List<Product> products);

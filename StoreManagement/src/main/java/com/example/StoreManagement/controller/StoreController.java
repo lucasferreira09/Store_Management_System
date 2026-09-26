@@ -36,7 +36,7 @@ public class StoreController {
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<StoreDtoResponse> getById(@PathVariable Long id){
+    public ResponseEntity<StoreDtoDetailResponse> getById(@PathVariable Long id){
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -69,7 +69,7 @@ public class StoreController {
     }
 
     @PostMapping()
-    public ResponseEntity<StoreDtoDetailResponse> create(@RequestBody @Valid StoreDtoPostRequest storeDtoPostRequest) {
+    public ResponseEntity<StoreDtoDetailResponse> create(@Valid @RequestBody StoreDtoPostRequest storeDtoPostRequest) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(this.storeService.create(storeDtoPostRequest));

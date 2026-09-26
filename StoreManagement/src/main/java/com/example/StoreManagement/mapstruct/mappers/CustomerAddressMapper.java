@@ -16,8 +16,8 @@ public interface CustomerAddressMapper {
 
     CustomerAddress dtoPostToEntity(CustomerAddressDtoPostRequest customerAddressDtoPostRequest);
 
-    @Mapping(source = "customer.id", target = "customerID")
-    @Mapping(source = "address.id", target = "addressID")
+    @Mapping(source = "customer.id", target = "customerId")
+    @Mapping(source = "address.id", target = "addressId")
     CustomerAddressResponse entityToDtoResponse(CustomerAddress customerAddress);
 
     @Mapping(source = "customer.name", target = "name")

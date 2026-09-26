@@ -1,6 +1,10 @@
 package com.example.StoreManagement.dtos.dtoRequest;
 
+import jakarta.validation.constraints.NotNull;
+
 public record CustomerAddressDtoPostRequest(
-        Long customerID,
-        Long addressID
+        @NotNull(message = "CustomerId must not be empty")
+        Long customerId,
+        @NotNull(message = "AddressId must not be empty")
+        Long addressId
 ) {}

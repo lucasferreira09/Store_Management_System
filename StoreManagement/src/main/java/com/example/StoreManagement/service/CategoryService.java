@@ -1,6 +1,7 @@
 package com.example.StoreManagement.service;
 
-import com.example.StoreManagement.Exception.EntityNotFound;
+import com.example.StoreManagement.Exception.ResourceAlreadyInUseException;
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
 import com.example.StoreManagement.dtos.dtoRequest.CategoryPutRequest;
 import com.example.StoreManagement.mapstruct.mappers.CategoryMapper;
 import com.example.StoreManagement.utils.PaginationRequest;
@@ -11,8 +12,6 @@ import com.example.StoreManagement.dtos.dtoResponse.CategoryDtoResponse;
 import com.example.StoreManagement.model.entity.Category;
 import com.example.StoreManagement.repository.CategoryRepository;
 import com.example.StoreManagement.repository.ProductRepository;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +28,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final ProductRepository productRepository;
-
+    private static final String entityName = "Category";
 
     public PagingResult<CategoryDtoResponse> findAll(PaginationRequest request) {
         Pageable pageable = PaginationUtils.getPageable(request);
@@ -50,8 +49,7 @@ public class CategoryService {
 
     public CategoryDtoResponse findById(Long id) {
         Category category = this.categoryRepository.findByIdAndActiveTrue(id)
-                //.orElseThrow(() -> new EntityNotFoundException("Category not found!"));
-                .orElseThrow(() -> new EntityNotFound(id));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         return this.categoryMapper.entityToDtoResponse(category);
     }
@@ -68,7 +66,7 @@ public class CategoryService {
         Category category = this.categoryRepository.findByName(dtoPostRequest.name());
         if (category != null) {
             if (category.isActive())
-                throw new EntityExistsException("Category already exists");
+                throw new ResourceAlreadyInUseException(entityName, "Name:" + dtoPostRequest.name());
 
             category.setActive(true);
             return this.categoryMapper.entityToDtoResponse(this.categoryRepository.save(category));
@@ -81,7 +79,7 @@ public class CategoryService {
     @Transactional
     public CategoryDtoResponse update(Long id, CategoryPutRequest putRequest) {
         Category category = categoryRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         categoryMapper.updateEntity(putRequest, category);
         categoryRepository.save(category);
@@ -92,7 +90,7 @@ public class CategoryService {
     @Transactional
     public void delete(Long id) {
         Category category = this.categoryRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID:" + id.toString()));
 
         this.categoryRepository.delete(category);
     }

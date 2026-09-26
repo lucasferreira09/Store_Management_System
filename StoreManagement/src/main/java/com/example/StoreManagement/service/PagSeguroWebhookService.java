@@ -1,5 +1,8 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
+import com.example.StoreManagement.Exception.payment.InvalidWebhookPayloadException;
+import com.example.StoreManagement.Exception.payment.UnsupportedPaymentMethodException;
 import com.example.StoreManagement.dtos.dtoRequest.PaymentCompletedData;
 import com.example.StoreManagement.dtos.dtoResponse.PagBankPaymentWebhook;
 import com.example.StoreManagement.enums.PaymentMethodType;
@@ -36,7 +39,7 @@ public class PagSeguroWebhookService {
         switch (webhook.charges().get(0).status()) {
             case "PAID", "AUTHORIZED" -> handleCheckoutCompleted(webhook);
             case "DECLINED" -> handleCheckoutPaymentFailed(webhook);
-            default -> throw new RuntimeException("An error occurred while processing Payment Webhook");
+            default -> throw new InvalidWebhookPayloadException("An error occurred while processing Payment Webhook");
         }
     }
 
@@ -52,7 +55,7 @@ public class PagSeguroWebhookService {
 
     private PaymentCompletedData processPaymentCompleted(PagBankPaymentWebhook paymentWebhook) {
         if (paymentWebhook.charges().isEmpty())
-            throw new IllegalStateException("PagBank webhook contains no charges");
+            throw new InvalidWebhookPayloadException("PagBank webhook contains no charges");
 
         PagBankPaymentWebhook.PagBankCharge charge = paymentWebhook.charges().getFirst();
 
@@ -64,7 +67,7 @@ public class PagSeguroWebhookService {
         String paymentMessage = charge.paymentResponse().message();
         PaymentMethodType methodType = switch (paymentMethodType) {
             case "CREDIT_CARD" -> PaymentMethodType.CARD;
-            default -> throw new IllegalStateException("Payment Method does not exist: " + paymentMethodType);
+            default -> throw new UnsupportedPaymentMethodException(paymentMethodType.toString());
         };
 
         String cardBrand = null;

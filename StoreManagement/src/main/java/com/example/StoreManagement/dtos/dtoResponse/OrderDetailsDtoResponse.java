@@ -11,7 +11,7 @@ public record OrderDetailsDtoResponse(
         String status,
         Instant created_at,
         BigDecimal totalAmount,
-        String street,
+        String addressLine1,
         String number,
         String city,
         String state,

@@ -1,5 +1,7 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.ResourceAlreadyInUseException;
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
 import com.example.StoreManagement.dtos.dtoRequest.CustomerDtoPutRequest;
 import com.example.StoreManagement.mapstruct.mappers.AddressMapper;
 import com.example.StoreManagement.mapstruct.mappers.CustomerMapper;
@@ -12,8 +14,6 @@ import com.example.StoreManagement.dtos.dtoResponse.CustomerDtoResponse;
 import com.example.StoreManagement.model.entity.Customer;
 import com.example.StoreManagement.repository.AddressRepository;
 import com.example.StoreManagement.repository.CustomerRepository;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +30,7 @@ public class CustomerService {
     private final AddressRepository addressRepository;
     private final CustomerMapper customerMapper;
     private final CustomerRepository customerRepository;
+    private static final String entityName = "Customer";
 
 
     public PagingResult<CustomerDtoResponse> findAll(PaginationRequest request) {
@@ -51,7 +52,7 @@ public class CustomerService {
 
     public CustomerDtoResponse findById(Long id) {
         Customer customer = this.customerRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID: " + id.toString()));
 
         return this.customerMapper.entityToDtoResponse(customer);
     }
@@ -75,7 +76,7 @@ public class CustomerService {
 
     public CustomerDtoResponse findByCpf(String cpf) {
         Customer customer = this.customerRepository.findByCpfAndActiveTrue(cpf)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "CPF:" + cpf));
 
         return this.customerMapper.entityToDtoResponse(customer);
     }
@@ -87,7 +88,7 @@ public class CustomerService {
 
         if (existingByCpf != null) {
             if (existingByCpf.isActive())
-                throw new EntityExistsException("Customer already exists");
+                throw new ResourceAlreadyInUseException(entityName, "CPF:" + existingByCpf.getCpf());
 
             this.checkEmailAvailability(existingByCpf, dtoPostRequest.email());
             return this.customerMapper.entityToDtoDetailResponse(this.reactivateCustomer(existingByCpf, dtoPostRequest));
@@ -103,11 +104,11 @@ public class CustomerService {
     @Transactional
     public CustomerDtoDetailResponse update(Long id, CustomerDtoPutRequest putRequest) {
         Customer customer = customerRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, id.toString()));
 
         Customer existingByCpf = this.customerRepository.findByCpf(putRequest.cpf());
         if (existingByCpf != null && !existingByCpf.getId().equals(customer.getId()))
-           throw new EntityExistsException("This CPF already belongs to another Customer");
+           throw new ResourceAlreadyInUseException(entityName,  "CPF:" + existingByCpf.getCpf());
 
         this.checkEmailAvailability(customer, putRequest.email());
 
@@ -118,7 +119,7 @@ public class CustomerService {
     @Transactional
     public void delete(Long id) {
         Customer customer = this.customerRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName,  id.toString()));
 
         this.customerRepository.delete(customer);
     }
@@ -139,7 +140,7 @@ public class CustomerService {
         if (existingByEmail != null &&
                 (customer != null || !existingByEmail.getId().equals(customer.getId()))
         )
-            throw new EntityExistsException("Email already in use");
+            throw new ResourceAlreadyInUseException(entityName, "Email:" + email);
 
     }
 }

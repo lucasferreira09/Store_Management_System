@@ -1,5 +1,7 @@
 package com.example.StoreManagement.service;
 
+import com.example.StoreManagement.Exception.ResourceAlreadyInUseException;
+import com.example.StoreManagement.Exception.ResourceNotFoundException;
 import com.example.StoreManagement.mapstruct.mappers.StoreMapper;
 import com.example.StoreManagement.utils.PaginationRequest;
 import com.example.StoreManagement.utils.PaginationUtils;
@@ -28,6 +30,7 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
     private final AddressRepository addressRepository;
+    private static final String entityName = "Store";
 
 
     public PagingResult<StoreDtoResponse> findAll(PaginationRequest paginationRequest) {
@@ -35,7 +38,9 @@ public class StoreService {
 
         Page<Store> storesPage = this.storeRepository.findByActiveTrue(pageable);
 
-        List<StoreDtoResponse> storeDtoResponses = storesPage.stream().map(storeMapper::entityToDtoResponse).toList();
+        List<StoreDtoResponse> storeDtoResponses = storesPage
+                .stream()
+                .map(storeMapper::entityToDtoResponse).toList();
 
         return new PagingResult<>(
                 storeDtoResponses,
@@ -48,11 +53,11 @@ public class StoreService {
         );
     }
 
-    public StoreDtoResponse findById(Long id) {
+    public StoreDtoDetailResponse findById(Long id) {
         Store store = this.storeRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID."));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID " + id));
 
-        return this.storeMapper.entityToDtoResponse(store);
+        return this.storeMapper.entityToDtoDetailResponse(store);
     }
 
     public List<StoreDtoResponse> findByName(String name) {
@@ -65,7 +70,7 @@ public class StoreService {
         Store store = this.storeRepository.findByCnpjAndActiveTrue(cnpj);
 
         if (store == null) {
-            throw new EntityNotFoundException("Store not found with this CNPJ.");
+            throw new ResourceNotFoundException(entityName, "CNPJ " + cnpj);
         }
 
         return this.storeMapper.entityToDtoResponse(store);
@@ -86,7 +91,7 @@ public class StoreService {
 
         if (existingByCnpj != null) {
             if (existingByCnpj.isActive())
-                throw new EntityExistsException("This Store already exists");
+                throw new ResourceAlreadyInUseException(entityName, "CNPJ " + dtoPostRequest.cnpj());
 
             this.checkEmailAvailability(dtoPostRequest.email(), existingByCnpj.getId());
             return this.storeMapper.entityToDtoDetailResponse(reactivateStore(existingByCnpj, dtoPostRequest));
@@ -97,7 +102,8 @@ public class StoreService {
         Store store = this.storeMapper.dtoPostRequestToEntity(dtoPostRequest);
         if (dtoPostRequest.addressId() != null) {
             Address address = this.addressRepository.findById(dtoPostRequest.addressId())
-                    .orElseThrow(() -> new EntityNotFoundException("Address not found with this ID!"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Address", "ID " + dtoPostRequest.addressId()));
+
             store.setAddress(address);
         } else {
             store.setAddress(null);
@@ -110,13 +116,13 @@ public class StoreService {
 
     public StoreDtoDetailResponse update(Long id, StoreDtoPutRequest dtoPutRequest) {
         Store existingStore = this.storeRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID " + id));
 
         this.checkCnpjAvailability(dtoPutRequest.cnpj(), existingStore.getId());
         this.checkEmailAvailability(dtoPutRequest.email(), existingStore.getId());
 
         Address address = this.addressRepository.findById(dtoPutRequest.addressId())
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "ID " + dtoPutRequest.addressId()));
 
         storeMapper.updateEntity(dtoPutRequest, existingStore);
         this.storeRepository.save(existingStore);
@@ -126,7 +132,7 @@ public class StoreService {
 
     public StoreDtoDetailResponse updateCnpj(Long storeId, StoreDtoPutRequest.Cnpj putRequest) {
         Store store = this.storeRepository.findByIdAndActiveTrue(storeId)
-                .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID " + storeId));
 
 
         this.checkCnpjAvailability(putRequest.cnpj(), store.getId());
@@ -138,10 +144,10 @@ public class StoreService {
 
     public StoreDtoResponse updateAddress(Long storeId, StoreDtoPutRequest.Adress putRequest) {
         Store store = this.storeRepository.findByIdAndActiveTrue(storeId)
-                .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID " + storeId));
 
         Address address = this.addressRepository.findById(putRequest.addressId())
-                .orElseThrow(() -> new EntityExistsException("Address not found with this ID"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "ID " + putRequest.addressId()));
 
         store.setAddress(address);
         this.storeRepository.save(store);
@@ -150,7 +156,7 @@ public class StoreService {
 
     public void delete(Long id) {
         Store store = this.storeRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Store not found with this ID."));
+                .orElseThrow(() -> new ResourceNotFoundException(entityName, "ID " + id));
 
 
         this.storeRepository.delete(store);
@@ -160,7 +166,7 @@ public class StoreService {
 
         if (dtoPostRequest.addressId() != null) {
             Address address = this.addressRepository.findById(dtoPostRequest.addressId())
-                    .orElseThrow(() -> new EntityNotFoundException("Address not found!"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Address", "ID " + dtoPostRequest.addressId()));
             store.setAddress(address);
         } else {
             store.setAddress(null);
@@ -178,14 +184,14 @@ public class StoreService {
 
         if (existingByEmail != null &&
                 (currentStoreId == null || !existingByEmail.getId().equals(currentStoreId)))
-            throw new EntityExistsException("Email already in use");
+            throw new ResourceAlreadyInUseException("Email " + email);
     }
 
     private void checkCnpjAvailability(String cnpj, Long currentStoreId) {
         Store existingByCnpj = this.storeRepository.findByCnpj(cnpj);
 
         if (existingByCnpj != null && !existingByCnpj.getId().equals(currentStoreId))
-            throw new EntityExistsException("This CNPJ already belongs to another Store");
+            throw new ResourceAlreadyInUseException("CNPJ " + cnpj);
     }
 
 }

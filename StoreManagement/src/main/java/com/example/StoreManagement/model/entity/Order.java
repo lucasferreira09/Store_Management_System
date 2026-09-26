@@ -34,8 +34,8 @@ public class Order {
     @Column(name = "totalAmount", nullable = false)
     private BigDecimal totalAmount;
 
-    @Column(name = "street", nullable = false)
-    private String street;
+    @Column(name = "addressLine1", nullable = false)
+    private String addressLine1;
 
     @Column(name = "number")
     private String number;
